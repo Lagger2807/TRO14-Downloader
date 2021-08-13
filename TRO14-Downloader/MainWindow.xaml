@@ -5,8 +5,67 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TRO14_Downloader"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="WindowLoaded">
+        Title="TROP Downloader" Height="450" Width="800" ResizeMode="CanMinimize" Icon="Logo .png" WindowStartupLocation="CenterScreen" Visibility="Visible" Loaded="Window_Loaded">
+    <Window.Background>
+        <ImageBrush Stretch="UniformToFill" ImageSource="BackGround.png" TileMode="Tile"/>
+    </Window.Background>
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.02*"/>
+            <ColumnDefinition Width="0.1*"/>
+            <ColumnDefinition Width="0.1*"/>
+            <ColumnDefinition Width="0.45*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="0.1*"/>
+            <ColumnDefinition Width="0.02*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.02*"/>
+            <RowDefinition Height="0.05*"/>
+            <RowDefinition Height="0.15*"/>
+            <RowDefinition Height="0.15*"/>
+            <RowDefinition Height="0.15*"/>
+            <RowDefinition Height="0.15*"/>
+            <RowDefinition Height="0.15*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="0.05*"/>
+            <RowDefinition Height="0.02*"/>
+        </Grid.RowDefinitions>
         
+        <Rectangle Grid.Column="1" Grid.ColumnSpan="7" Fill="#7FF4F4F5" HorizontalAlignment="Stretch" Grid.Row="1" Grid.RowSpan="8" Stroke="Black" VerticalAlignment="Stretch" StrokeThickness="0" RadiusX="15" RadiusY="15"/>
+
+        <!--Demo-->
+        <CheckBox Name="CK_Demo"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" Cursor="Hand"/>
+        <Label Name="Text_Demo" Content="Demo" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="2" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+        <Ellipse Name="Led_Demo" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="2" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
+
+        <!--Lite-->
+        <CheckBox Name="CK_Lite"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" Cursor="Hand"/>
+        <Label Name="Text_Lite" Content="Lite" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+        <Ellipse Name="Led_Lite" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="3" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
+
+        <!--Standard-->
+        <CheckBox Name="CK_Standard"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Cursor="Hand"/>
+        <Label Name="Text_Standard" Content="Standard" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="4" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+        <Ellipse Name="Led_Standard" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="4" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
+
+        <!--OldTimes-->
+        <CheckBox Name="CK_OldTimes"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="5" VerticalAlignment="Center" Cursor="Hand"/>
+        <Label Name="Text_OldTimes" Content="Old Times" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+        <Ellipse Name="Led_OldTimes" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="5" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
+
+        <!--Future-->
+        <CheckBox Name="CK_Future" Grid.Column="2" HorizontalAlignment="Center" Grid.Row="6" VerticalAlignment="Center" Cursor="Hand"/>
+        <Label Name="Text_Future" Content="Future" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+        <Ellipse Name="Led_Future" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="6" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
+
+        <Button Content="Scarica/Aggiorna selezionati" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="7" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="14" Cursor="Hand" IsDefault="True" Click="Btn_Download_Click"/>
+        <ProgressBar Grid.Column="1" Grid.ColumnSpan="7" HorizontalAlignment="Center" Height="15" Grid.Row="7" VerticalAlignment="Center" Width="200" IsIndeterminate="True" Cursor="Wait" Visibility="Hidden"/>
+        <Button Content="Visualizza versioni installate" Grid.Column="4" HorizontalAlignment="Center" Grid.Row="7" VerticalAlignment="Bottom" FontSize="14" FontWeight="Bold" Cursor="Hand" Click="Btn_Visualizza_Click"/>
+        
+        <Button Content="Visualizza guida post-download" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="14" Click="Btn_Tutorial_Click"/>
+
     </Grid>
 </Window>
