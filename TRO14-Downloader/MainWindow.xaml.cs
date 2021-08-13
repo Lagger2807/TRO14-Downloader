@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CrashReporterDotNET;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace TRO14_Downloader
 {
@@ -153,7 +155,7 @@ namespace TRO14_Downloader
             }
             catch(Exception error)
             {
-                MessageBox.Show(error.Message);
+                App.SendReport(error, "Errore di inizializzazione" + error.Message);
             }
             
         }
@@ -356,7 +358,7 @@ namespace TRO14_Downloader
             }
             catch(Exception error)
             {
-                MessageBox.Show(error.Message);
+                App.SendReport(error, "Download non riuscito" + error.Message);
             }
             
         }
@@ -380,7 +382,7 @@ namespace TRO14_Downloader
             }
             catch(Exception error)
             {
-                MessageBox.Show(error.Message);
+                App.SendReport(error, "Si è riscontrato un errore nella lettura dei pacchetti installati" + error.Message);
             }
             
         }
@@ -497,5 +499,50 @@ namespace TRO14_Downloader
         public float Standard { get; set; }
         public float OldTimes { get; set; }
         public float Future { get; set; }
+    }
+
+    public partial class App : Application
+    {
+        private static ReportCrash _reportCrash;
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+            Application.Current.DispatcherUnhandledException += DispatcherOnUnhandledException;
+            TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
+            _reportCrash = new ReportCrash("tro14.squad@gmail.com")
+            {
+                Silent = true
+            };
+            _reportCrash.RetryFailedReports();
+        }
+
+        private void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs unobservedTaskExceptionEventArgs)
+        {
+            SendReport(unobservedTaskExceptionEventArgs.Exception);
+        }
+
+        private void DispatcherOnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs dispatcherUnhandledExceptionEventArgs)
+        {
+            SendReport(dispatcherUnhandledExceptionEventArgs.Exception);
+        }
+
+        private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
+        {
+            SendReport((Exception)unhandledExceptionEventArgs.ExceptionObject);
+        }
+
+        public static void SendReport(Exception exception, string developerMessage = "")
+        {
+            _reportCrash.Silent = false;
+            _reportCrash.Send(exception);
+        }
+
+        public static void SendReportSilently(Exception exception, string developerMessage = "")
+        {
+            _reportCrash.Silent = true;
+            _reportCrash.Send(exception);
+        }
     }
 }
