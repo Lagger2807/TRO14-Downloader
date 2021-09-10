@@ -65,7 +65,14 @@
         <ProgressBar Grid.Column="1" Grid.ColumnSpan="7" HorizontalAlignment="Center" Height="15" Grid.Row="7" VerticalAlignment="Center" Width="200" IsIndeterminate="True" Cursor="Wait" Visibility="Hidden"/>
         <Button Content="Visualizza versioni installate" Grid.Column="4" HorizontalAlignment="Center" Grid.Row="7" VerticalAlignment="Bottom" FontSize="14" FontWeight="Bold" Cursor="Hand" Click="Btn_Visualizza_Click"/>
         
-        <Button Content="Visualizza guida post-download" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="14" Click="Btn_Tutorial_Click"/>
+        <Button Content="Visualizza guida post-download" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="7" VerticalAlignment="Top" FontSize="14" Click="Btn_Tutorial_Click"/>
+        
+        <Button Content="Scarica patch Vulkan API" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" Width="160" FontSize="14" Click="Btn_Vulkan_Click"/>
+        <CheckBox Name="CK_Vulkan" Content="Abilita Vulkan API" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" Visibility="Hidden" Checked="CK_Vulkan_CheckedEvent" Unchecked="CK_Vulkan_UncheckedEvent"/>
+
+        <Ellipse Name="Led_Vulkan" Grid.Column="6" Fill="#99009600" HorizontalAlignment="Center" Height="22" Grid.Row="4" Stroke="#7F000000" VerticalAlignment="Center" Width="100" Visibility="Hidden"/>
+        <Label Name="Text_VulkanIsPresent" Content="Vulkan API presenti" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" FontSize="10" Visibility="Hidden"/>
+        
 
     </Grid>
 </Window>

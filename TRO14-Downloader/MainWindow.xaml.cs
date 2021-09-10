@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -26,8 +27,14 @@ namespace TRO14_Downloader
     /// </summary>
     public partial class MainWindow : Window
     {
-
+        //Global installation folder
         public string installationFolder = Environment.CurrentDirectory;
+
+        //Global ArmA3 folder
+        public string arma3Folder;
+
+        //State variables
+        public bool vulkan;
 
         //Download Links
         public string jsonDemoLink = "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/Demo.json";
@@ -41,6 +48,8 @@ namespace TRO14_Downloader
         public string packStandardLink = "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Standard.html";
         public string packOldTimesLink = "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20OldTimes.html";
         public string packFutureLink = "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Future.html";
+
+        public string vulkanAPIFiles = "https://github.com/Lagger2807/TRO14-Files/raw/main/VulkanFiles.zip";
 
         public MainWindow()
         {
@@ -152,9 +161,40 @@ namespace TRO14_Downloader
                         MessageBox.Show("Aggiornamento Future disponibile!");
                     }
                 }
+
+                //Check if the VulkanAPIs are installed
+                if(File.Exists(installationFolder + @"\VulkanIsPresent.txt"))
+                {
+                    //Read the ArmA3 directory
+                    StreamReader reader = new StreamReader("VulkanIsPresent.txt");
+                    arma3Folder = reader.ReadLine();
+                    reader.Close();
+
+                    //Show the VulkanAPI checkbox, text and led
+                    CK_Vulkan.Visibility = Visibility.Visible;
+                    Text_VulkanIsPresent.Visibility = Visibility.Visible;
+                    Led_Vulkan.Visibility = Visibility.Visible;
+
+                    if (File.Exists(arma3Folder + @"\d3d11.dll") && File.Exists(arma3Folder + @"\dxgi.dll"))
+                    {
+                        vulkan = true; //Sets the global VulkanAPI presence variable on true
+                        CK_Vulkan.IsChecked = true;
+                    }
+                    else if (File.Exists(arma3Folder + @"\d3d11.dllOFF") && File.Exists(arma3Folder + @"\dxgi.dllOFF"))
+                    {
+                        vulkan = false; //Sets the global VulkanAPI presence variable on false
+                        CK_Vulkan.IsChecked = false;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Installazione Vulkan danneggiata, attivatore rapido disattivato");
+                        CK_Vulkan.IsEnabled = false;
+                    }
+                }
             }
             catch(Exception error)
             {
+                //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "Errore di inizializzazione" + error.Message);
             }
             
@@ -358,6 +398,7 @@ namespace TRO14_Downloader
             }
             catch(Exception error)
             {
+                //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "Download non riuscito" + error.Message);
             }
             
@@ -382,9 +423,131 @@ namespace TRO14_Downloader
             }
             catch(Exception error)
             {
+                //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "Si è riscontrato un errore nella lettura dei pacchetti installati" + error.Message);
             }
             
+        }
+
+        private void Btn_Vulkan_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                //Set download root folder
+                string downloadFolder = installationFolder + @"\Download";
+
+                bool dialogOK = false;
+
+                //Open folder selection dialog to user
+                System.Windows.Forms.FolderBrowserDialog folderDlg = new System.Windows.Forms.FolderBrowserDialog();                
+                folderDlg.ShowNewFolderButton = false; //Disable new folders creation
+
+                //Show dialog to user
+                System.Windows.Forms.DialogResult result = folderDlg.ShowDialog();
+
+                //Check if a folder as been selected and assign it to a variable, else it choose the default (desktop) folder
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    arma3Folder = folderDlg.SelectedPath;
+                    dialogOK = true;
+                    //Call to the Downloader function
+                    Downloader(vulkanAPIFiles, downloadFolder + @"\VulkanFiles.zip");
+                }
+                else
+                {
+                    //Set the ArmA3 folder as the desktop
+                    arma3Folder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+                    //Call to the Downloader function
+                    Downloader(vulkanAPIFiles, downloadFolder + @"\VulkanFiles.zip");
+                }
+
+                //Check if the files already exist, if true it overwrites them
+                if (File.Exists(arma3Folder + @"\d3d11.dll"))
+                    File.Delete(arma3Folder + @"\d3d11.dll");
+
+                if (File.Exists(arma3Folder + @"\dxgi.dll"))
+                    File.Delete(arma3Folder + @"\dxgi.dll");
+
+                //Unzip files in the ArmA3 directory
+                ZipFile.ExtractToDirectory(downloadFolder + @"\VulkanFiles.zip", arma3Folder);
+                
+                //Check if the placeholder file is present and if the dialog has been completed
+                if (File.Exists(installationFolder + @"\VulkanIsPresent.txt") && dialogOK)
+                {
+                    vulkan = true; //Sets the global VulkanAPI presence variable on true
+                    //Show the VulkanAPI checkbox, text and led
+                    CK_Vulkan.Visibility = Visibility.Visible;
+                    CK_Vulkan.IsChecked = true;
+                    Text_VulkanIsPresent.Visibility = Visibility.Visible;
+                    Led_Vulkan.Visibility = Visibility.Visible;
+                }
+                else if(!File.Exists(installationFolder + @"\VulkanIsPresent.txt") && dialogOK)
+                {
+                    //Create the placeholder file to know if VulkanAPI is present
+                    StreamWriter writer = new StreamWriter("VulkanIsPresent.txt");
+                    writer.WriteLine(arma3Folder);
+                    writer.Close();
+
+                    vulkan = true; //Sets the global VulkanAPI presence variable on true
+                    //Show the VulkanAPI checkbox, text and led
+                    CK_Vulkan.Visibility = Visibility.Visible;
+                    CK_Vulkan.IsChecked = true;
+                    Text_VulkanIsPresent.Visibility = Visibility.Visible;
+                    Led_Vulkan.Visibility = Visibility.Visible;
+                }
+
+                MessageBox.Show("Librerie Vulkan installate correttamente");
+            }
+            catch(Exception error)
+            {
+                //Send Crash report via CrashReportDotNet API
+                App.SendReport(error, "Download Vulkan API non riuscito" + error.Message);
+            }
+        }
+
+        private void CK_Vulkan_CheckedEvent(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                //If VulkanAPIs are already on the rename script do not trigger
+                if (!vulkan)
+                {
+                    //Rename files using Move using
+                    File.Move(arma3Folder + @"\d3d11.dllOFF", arma3Folder + @"\d3d11.dll");
+                    File.Move(arma3Folder + @"\dxgi.dllOFF", arma3Folder + @"\dxgi.dll");
+                    vulkan = true;
+                }
+
+                MessageBox.Show("Disabilita il servizio Battleye™ dal launcher di ArmA 3 per permettere l'avvio");
+            }
+            catch(Exception error)
+            {
+                //Send Crash report via CrashReportDotNet API
+                App.SendReport(error, "Download Vulkan API non riuscito" + error.Message);
+            }
+        }
+
+        private void CK_Vulkan_UncheckedEvent(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                //If VulkanAPIs are already off the rename script do not trigger
+                if (vulkan)
+                {
+                    //Rename files using Move using
+                    File.Move(arma3Folder + @"\d3d11.dll", arma3Folder + @"\d3d11.dllOFF");
+                    File.Move(arma3Folder + @"\dxgi.dll", arma3Folder + @"\dxgi.dllOFF");
+                    vulkan = false;
+                }
+
+                MessageBox.Show("Puoi riabilitare il servizio Battleye™ nel launcher di ArmA 3");
+            }
+            catch(Exception error)
+            {
+                //Send Crash report via CrashReportDotNet API
+                App.SendReport(error, "Download Vulkan API non riuscito" + error.Message);
+            }
         }
 
         //Re-callable Downloader
