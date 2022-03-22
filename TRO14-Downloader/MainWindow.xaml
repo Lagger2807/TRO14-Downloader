@@ -10,71 +10,112 @@
         <ImageBrush Stretch="UniformToFill" ImageSource="BackGround.png" TileMode="Tile"/>
     </Window.Background>
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0.02*"/>
-            <ColumnDefinition Width="0.1*"/>
-            <ColumnDefinition Width="0.1*"/>
-            <ColumnDefinition Width="0.45*"/>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="0.1*"/>
-            <ColumnDefinition Width="0.02*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="0.02*"/>
-            <RowDefinition Height="0.05*"/>
-            <RowDefinition Height="0.15*"/>
-            <RowDefinition Height="0.15*"/>
-            <RowDefinition Height="0.15*"/>
-            <RowDefinition Height="0.15*"/>
-            <RowDefinition Height="0.15*"/>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="0.05*"/>
-            <RowDefinition Height="0.02*"/>
-        </Grid.RowDefinitions>
-        
-        <Rectangle Grid.Column="1" Grid.ColumnSpan="7" Fill="#7FF4F4F5" HorizontalAlignment="Stretch" Grid.Row="1" Grid.RowSpan="8" Stroke="Black" VerticalAlignment="Stretch" StrokeThickness="0" RadiusX="15" RadiusY="15"/>
+        <TabControl Background="#66FFFFFF">
+            <TabItem Header="Basic">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.02*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="0.45*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="0.02*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.02*"/>
+                        <RowDefinition Height="0.05*"/>
+                        <RowDefinition Height="0.15*"/>
+                        <RowDefinition Height="0.15*"/>
+                        <RowDefinition Height="0.15*"/>
+                        <RowDefinition Height="0.15*"/>
+                        <RowDefinition Height="0.15*"/>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="0.05*"/>
+                        <RowDefinition Height="0.02*"/>
+                    </Grid.RowDefinitions>
 
-        <!--Demo-->
-        <CheckBox Name="CK_Demo"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" Cursor="Hand"/>
-        <Label Name="Text_Demo" Content="Demo" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="2" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
-        <Ellipse Name="Led_Demo" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="2" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
+                    <Rectangle Grid.Column="1" Grid.ColumnSpan="7" Fill="#7FF4F4F5" HorizontalAlignment="Stretch" Grid.Row="1" Grid.RowSpan="8" VerticalAlignment="Stretch" StrokeThickness="0" RadiusX="15" RadiusY="15"/>
 
-        <!--Lite-->
-        <CheckBox Name="CK_Lite"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" Cursor="Hand"/>
-        <Label Name="Text_Lite" Content="Lite" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
-        <Ellipse Name="Led_Lite" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="3" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
+                    <!--Demo-->
+                    <CheckBox Name="CK_Demo"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" Cursor="Hand"/>
+                    <Label Name="Text_Demo" Content="Demo" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="2" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+                    <Ellipse Name="Led_Demo" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="2" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
 
-        <!--Standard-->
-        <CheckBox Name="CK_Standard"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Cursor="Hand"/>
-        <Label Name="Text_Standard" Content="Standard" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="4" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
-        <Ellipse Name="Led_Standard" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="4" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
+                    <!--Lite-->
+                    <CheckBox Name="CK_Lite"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" Cursor="Hand"/>
+                    <Label Name="Text_Lite" Content="Lite" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+                    <Ellipse Name="Led_Lite" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="3" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
 
-        <!--OldTimes-->
-        <CheckBox Name="CK_OldTimes"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="5" VerticalAlignment="Center" Cursor="Hand"/>
-        <Label Name="Text_OldTimes" Content="Old Times" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
-        <Ellipse Name="Led_OldTimes" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="5" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
+                    <!--Standard-->
+                    <CheckBox Name="CK_Standard"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Cursor="Hand"/>
+                    <Label Name="Text_Standard" Content="Standard" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="4" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+                    <Ellipse Name="Led_Standard" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="4" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
 
-        <!--Future-->
-        <CheckBox Name="CK_Future" Grid.Column="2" HorizontalAlignment="Center" Grid.Row="6" VerticalAlignment="Center" Cursor="Hand"/>
-        <Label Name="Text_Future" Content="Future" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
-        <Ellipse Name="Led_Future" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="6" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
+                    <!--OldTimes-->
+                    <CheckBox Name="CK_OldTimes"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="5" VerticalAlignment="Center" Cursor="Hand"/>
+                    <Label Name="Text_OldTimes" Content="Old Times" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+                    <Ellipse Name="Led_OldTimes" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="5" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
 
-        <ProgressBar Grid.Column="1" Grid.ColumnSpan="7" HorizontalAlignment="Center" Height="15" Grid.Row="7" VerticalAlignment="Center" Width="200" IsIndeterminate="True" Cursor="Wait" Visibility="Hidden"/>
+                    <!--Future-->
+                    <CheckBox Name="CK_Future" Grid.Column="2" HorizontalAlignment="Center" Grid.Row="6" VerticalAlignment="Center" Cursor="Hand"/>
+                    <Label Name="Text_Future" Content="Future" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
+                    <Ellipse Name="Led_Future" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="6" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
 
-        <Button Content="Show post-download guide" Grid.Column="2" Grid.ColumnSpan="3" HorizontalAlignment="Left" Grid.Row="7" VerticalAlignment="Bottom" Margin="0,0,0,25" FontSize="11" Click="Btn_Tutorial_Click" Cursor="Hand"/>
-        <Button Content="Show installed versions" Grid.Column="2" Grid.ColumnSpan="3" HorizontalAlignment="Left" Grid.Row="7" VerticalAlignment="Bottom" FontSize="11" Cursor="Hand" Click="Btn_Visualizza_Click"/>
-        
-        <Button Content="Download/Update selected packs" Grid.Column="5" Grid.ColumnSpan="2" HorizontalAlignment="Right" Grid.Row="7" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="15" Cursor="Hand" IsDefault="True" Click="Btn_Download_Click"/>
+                    <!--Utility-->
+                    <Button Content="Show post-download guide" Grid.Column="4" Grid.ColumnSpan="1" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="11" Click="Btn_Tutorial_Click" Cursor="Hand"/>
+                    <Button Content="Show installed versions" Grid.Column="4" Grid.ColumnSpan="1" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" FontSize="11" Cursor="Hand" Click="Btn_Visualizza_Click"/>
+                    
+                    <!--Download-->
+                    <Button Content="Download/Update selected packs" Grid.Column="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" Grid.Row="7" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="15" Cursor="Hand" IsDefault="False" Click="Btn_Download_Click"/>
 
-        <!--Vulkan-->
-        <Button Content="Download Vulkan API patch" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="13" Click="Btn_Vulkan_Click" Cursor="Hand"/>
-        <CheckBox Name="CK_Vulkan" Content="Enable Vulkan API" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" Visibility="Hidden" Checked="CK_Vulkan_CheckedEvent" Unchecked="CK_Vulkan_UncheckedEvent" Cursor="Hand"/>
+                    <!--Start-->
+                    <Button Content="Start ArmA III Launcher" Grid.Column="5" Grid.ColumnSpan="2" Grid.Row="7" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="30" Height="65" Cursor="Hand" IsDefault="True" Click="Btn_Start_Click"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Advanced">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.02*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="0.45*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="0.02*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.02*"/>
+                        <RowDefinition Height="0.05*"/>
+                        <RowDefinition Height="0.15*"/>
+                        <RowDefinition Height="0.15*"/>
+                        <RowDefinition Height="0.15*"/>
+                        <RowDefinition Height="0.15*"/>
+                        <RowDefinition Height="0.15*"/>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="0.05*"/>
+                        <RowDefinition Height="0.02*"/>
+                    </Grid.RowDefinitions>
 
-        <Ellipse Name="Led_Vulkan" Grid.Column="6" Fill="#99009600" HorizontalAlignment="Center" Height="22" Grid.Row="4" Stroke="#7F000000" VerticalAlignment="Center" Width="100" Visibility="Hidden"/>
-        <Label Name="Text_VulkanIsPresent" Content="Vulkan API present" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" FontSize="10" Visibility="Hidden"/>
-        
+                    <Rectangle Grid.Column="1" Grid.ColumnSpan="8" Fill="#7FF4F4F5" HorizontalAlignment="Stretch" Grid.Row="1" Grid.RowSpan="8" Stroke="Black" VerticalAlignment="Stretch" StrokeThickness="0" RadiusX="15" RadiusY="15"/>
+                    <Rectangle Grid.Column="2" Grid.ColumnSpan="3" Fill="#99F4F4F5" HorizontalAlignment="Stretch" Grid.Row="2" Grid.RowSpan="5" Stroke="Black" VerticalAlignment="Stretch" StrokeThickness="0" RadiusX="15" RadiusY="15"/>
 
+                    <!--Disclaimer-->
+                    <TextBlock Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" Grid.Row="2" Grid.RowSpan="5" TextWrapping="Wrap" Text="Please note that these are advanced settings and therefore not intended for normal use and/or users." VerticalAlignment="Center" FontSize="22" Foreground="#FFDE0000"/>
+
+                    <!--Vulkan-->
+                    <Button Content="Download Vulkan API patch" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="13" Click="Btn_Vulkan_Click" Cursor="Hand" ToolTip="Vulkan APIs could improve performance (on some systems) &#10; by forcing better multithreading and enabling shaders pre-caching "/>
+                    <CheckBox Name="CK_Vulkan" Content="Enable Vulkan API" Grid.Column="5" HorizontalAlignment="Right" Grid.Row="2" VerticalAlignment="Center" Visibility="Hidden" Checked="CK_Vulkan_CheckedEvent" Unchecked="CK_Vulkan_UncheckedEvent" Cursor="Hand"/>
+
+                    <Ellipse Name="Led_Vulkan" Grid.Column="6" Fill="#99009600" HorizontalAlignment="Center" Height="22" Grid.Row="3" Stroke="#7F000000" VerticalAlignment="Center" Width="100" Visibility="Hidden"/>
+                    <Label Name="Text_VulkanIsPresent" Content="Vulkan API present" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" FontSize="10" Visibility="Hidden"/>
+
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

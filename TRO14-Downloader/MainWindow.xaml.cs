@@ -18,14 +18,15 @@ namespace TRO14_Downloader
     /// </summary>
     public partial class MainWindow : Window
     {
+        //OPTIMIZE VULKAN DIRECTORY READING AND FILE EXISTENCE CHECK ACROSS THE CODE o(≧口≦)o
+
         //Global installation folder
         public string installationFolder = Environment.CurrentDirectory;
 
-        //Global ArmA3 folder
-        public string arma3Folder;
-
         //State variables
         public bool vulkan;
+
+        StreamReader reader;
 
         //Download Links
         public string jsonDemoLink = "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/Demo.json";
@@ -57,7 +58,7 @@ namespace TRO14_Downloader
                 //Threaded on opening control of download versions and updates
                 await Task.Run(() => OpeningChecker());
             }
-            catch(Exception error)
+            catch (Exception error)
             {
                 //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "Initialization error" + error.Message);
@@ -303,6 +304,7 @@ namespace TRO14_Downloader
                 string downloadFolder = installationFolder + @"\Download";
 
                 bool dialogOK = false;
+                string arma3Folder;
 
                 //Open folder selection dialog to user
                 System.Windows.Forms.FolderBrowserDialog folderDlg = new System.Windows.Forms.FolderBrowserDialog();                
@@ -372,8 +374,10 @@ namespace TRO14_Downloader
             }
         }
 
-        private void CK_Vulkan_CheckedEvent(object sender, RoutedEventArgs e)
+        private void CK_Vulkan_CheckedEvent(object sender, RoutedEventArgs e) //HERE
         {
+            string arma3Folder = Reader(installationFolder + @"\VulkanIsPresent.txt", true);
+
             try
             {
                 //If VulkanAPIs are already on the rename script do not trigger
@@ -392,10 +396,12 @@ namespace TRO14_Downloader
                 //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "failed to enable Vulkan API" + error.Message);
             }
-        }
+        } 
 
-        private void CK_Vulkan_UncheckedEvent(object sender, RoutedEventArgs e)
+        private void CK_Vulkan_UncheckedEvent(object sender, RoutedEventArgs e) //HERE
         {
+            string arma3Folder = Reader(installationFolder + @"\VulkanIsPresent.txt", true);
+
             try
             {
                 //If VulkanAPIs are already off the rename script do not trigger
@@ -417,15 +423,16 @@ namespace TRO14_Downloader
         }
 
         //Function to check packs presence/update
-        void OpeningChecker()
+        void OpeningChecker() //HERE
         {
             //calling the versions.json controller
             Packs packsController = packVersionController();
 
             //All comments done in the "Demo" selection inside the dispatcher
-
             this.Dispatcher.Invoke(() =>
             {
+                //Optimize code (single Modpack object creation) (ToT)/
+
                 //Demo
                 if (packsController.Demo != 0)
                 {
@@ -520,13 +527,13 @@ namespace TRO14_Downloader
                     }
                 }
 
+                string vulkanFile = installationFolder + @"\VulkanIsPresent.txt";
+
                 //Check if the VulkanAPIs are installed
-                if (File.Exists(installationFolder + @"\VulkanIsPresent.txt"))
+                if (File.Exists(vulkanFile))
                 {
                     //Read the ArmA3 directory
-                    StreamReader reader = new StreamReader("VulkanIsPresent.txt");
-                    arma3Folder = reader.ReadLine();
-                    reader.Close();
+                    string arma3Folder = Reader(vulkanFile, true);
 
                     //Show the VulkanAPI checkbox, text and led
                     CK_Vulkan.Visibility = Visibility.Visible;
@@ -569,7 +576,7 @@ namespace TRO14_Downloader
             }
         }
 
-        //Re-callable Reader
+        //Re-callable Readers
         string Reader(string uri)
         {
             StreamReader reader = new StreamReader(uri);
@@ -578,6 +585,16 @@ namespace TRO14_Downloader
 
             return returnString;
         }
+
+        string Reader(string uri, bool singleLine)
+        {
+            reader = new StreamReader(uri);
+            string returnString = reader.ReadLine();
+            reader.Close();
+
+            return returnString;
+        }
+        //End Readers
 
         //Function with all first start procedures (check presence and create basic files/roots)
         void FirstStartControl()
@@ -653,7 +670,18 @@ namespace TRO14_Downloader
                     "-Accept all the Workshop™ subscriptions. \n" +
                     "-Wait until the mods are downloaded from Steam™.", "Instructions");
         }
+
+        private void Btn_Start_Click(object sender, RoutedEventArgs e)
+        {
+            if (!vulkan) { return; }
+
+            string arma3Folder = Reader(installationFolder + @"\VulkanIsPresent.txt", true);
+
+            Process.Start(arma3Folder + @"\arma3launcher.exe");
+            this.Close();
+        }
     }
+
     public class ModPack
     {
         public string Pack { get; set; }
