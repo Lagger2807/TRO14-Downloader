@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TRO14_Downloader"
         mc:Ignorable="d"
-        Title="TROP Downloader" Height="450" Width="800" ResizeMode="CanMinimize" Icon="Logo .png" WindowStartupLocation="CenterScreen" Visibility="Visible" Loaded="Window_Loaded">
+        Title="TROP Downloader" Height="450" Width="800" ResizeMode="CanMinimize" Icon="Images/Logo .png" WindowStartupLocation="CenterScreen" Visibility="Visible" Loaded="Window_Loaded">
     <Window.Background>
-        <ImageBrush Stretch="UniformToFill" ImageSource="BackGround.png" TileMode="Tile"/>
+        <ImageBrush Stretch="UniformToFill" ImageSource="Images/BackGround.png" TileMode="Tile"/>
     </Window.Background>
     <Grid>
         <TabControl Background="#66FFFFFF">

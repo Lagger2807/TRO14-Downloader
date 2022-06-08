@@ -26,28 +26,38 @@ namespace TRO14_Downloader
         //State variables
         public bool vulkan;
 
+        //Cached objects
         StreamReader reader;
+        Instructions instructions;
 
-        //Download Links
-        public string jsonDemoLink = "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/Demo.json";
-        public string jsonLiteLink = "https://github.com/Lagger2807/TRO14-Files/raw/main/Lite.json";
-        public string jsonStandardLink = "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/Standard.json";
-        public string jsonOldTimesLink = "https://github.com/Lagger2807/TRO14-Files/raw/main/OldTimes.json";
-        public string jsonFutureLink = "https://github.com/Lagger2807/TRO14-Files/raw/main/Future.json";
-
-        public string packDemoLink = "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Demo%20.html";
-        public string packLiteLink = "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Lite.html";
-        public string packStandardLink = "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Standard.html";
-        public string packOldTimesLink = "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20OldTimes.html";
-        public string packFutureLink = "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Future.html";
-
+        #region DownloadLinks
         public string vulkanAPIFiles = "https://github.com/Lagger2807/TRO14-Files/raw/main/VulkanFiles.zip";
-        
+
+        public string[] jsonLinks = new string[]
+        {
+            "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/Demo.json",
+            "https://github.com/Lagger2807/TRO14-Files/raw/main/Lite.json",
+            "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/Standard.json",
+            "https://github.com/Lagger2807/TRO14-Files/raw/main/OldTimes.json",
+            "https://github.com/Lagger2807/TRO14-Files/raw/main/Future.json"
+        };
+
+        public string[] packsLinks = new string[]
+        {
+            "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Demo%20.html",
+            "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Lite.html",
+            "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Standard.html",
+            "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20OldTimes.html",
+            "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Future.html"
+        };
+        #endregion
+
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        #region Events
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
@@ -78,12 +88,12 @@ namespace TRO14_Downloader
                 {
                     try
                     {
-                        await Task.Run(() =>Downloader(packDemoLink, downloadFolder + @"\Demo.html"));
+                        await Task.Run(() =>Downloader(packsLinks[0], downloadFolder + @"\Demo.html"));
 
                         string thisUri = installationFolder + @"\Demo.json";
                         if (!File.Exists(thisUri))
                         {
-                            await Task.Run(() => Downloader(jsonDemoLink, thisUri));
+                            await Task.Run(() => Downloader(jsonLinks[0], thisUri));
                         }
 
                         string jsonController = Reader(thisUri);
@@ -115,12 +125,12 @@ namespace TRO14_Downloader
                 {
                     try
                     {
-                        await Task.Run(() => Downloader(packLiteLink, downloadFolder + @"\Lite.html"));
+                        await Task.Run(() => Downloader(packsLinks[1], downloadFolder + @"\Lite.html"));
 
                         string thisUri = installationFolder + @"\Lite.json";
                         if (!File.Exists(thisUri))
                         {
-                            await Task.Run(() => Downloader(jsonLiteLink, thisUri));
+                            await Task.Run(() => Downloader(jsonLinks[1], thisUri));
                         }
 
                         string jsonController = Reader(thisUri);
@@ -152,12 +162,12 @@ namespace TRO14_Downloader
                 {
                     try
                     {
-                        await Task.Run(() => Downloader(packStandardLink, downloadFolder + @"\Standard.html"));
+                        await Task.Run(() => Downloader(packsLinks[2], downloadFolder + @"\Standard.html"));
 
                         string thisUri = installationFolder + @"\Standard.json";
                         if (!File.Exists(thisUri))
                         {
-                            await Task.Run(() => Downloader(jsonStandardLink, thisUri));
+                            await Task.Run(() => Downloader(jsonLinks[2], thisUri));
                         }
 
                         string jsonController = Reader(thisUri);
@@ -189,12 +199,12 @@ namespace TRO14_Downloader
                 {
                     try
                     {
-                        await Task.Run(() => Downloader(packOldTimesLink, downloadFolder + @"\OldTimes.html"));
+                        await Task.Run(() => Downloader(packsLinks[3], downloadFolder + @"\OldTimes.html"));
 
                         string thisUri = installationFolder + @"\OldTimes.json";
                         if (!File.Exists(thisUri))
                         {
-                            await Task.Run(() => Downloader(jsonOldTimesLink, thisUri));
+                            await Task.Run(() => Downloader(jsonLinks[3], thisUri));
                         }
 
                         string jsonController = Reader(thisUri);
@@ -226,12 +236,12 @@ namespace TRO14_Downloader
                 {
                     try
                     {
-                        await Task.Run(() => Downloader(packFutureLink, downloadFolder + @"\Future.html"));
+                        await Task.Run(() => Downloader(packsLinks[4], downloadFolder + @"\Future.html"));
 
                         string thisUri = installationFolder + @"\Future.json";
                         if (!File.Exists(thisUri))
                         {
-                            await Task.Run(() => Downloader(jsonFutureLink, thisUri));
+                            await Task.Run(() => Downloader(jsonLinks[4], thisUri));
                         }
 
                         string jsonController = Reader(thisUri);
@@ -260,7 +270,8 @@ namespace TRO14_Downloader
 
                 //Open the download folder and instructions
                 Process.Start(downloadFolder);
-                await Task.Run(() => Instructions());
+                instructions = new Instructions();
+                await Task.Run(() => instructions.Show());
             }
             catch(Exception error)
             {
@@ -272,7 +283,8 @@ namespace TRO14_Downloader
 
         private void Btn_Tutorial_Click(object sender, RoutedEventArgs e)
         {
-            Instructions();
+            instructions = new Instructions();
+            instructions.Show();
         }
 
         private void Btn_Visualizza_Click(object sender, RoutedEventArgs e)
@@ -374,6 +386,16 @@ namespace TRO14_Downloader
             }
         }
 
+        private void Btn_Start_Click(object sender, RoutedEventArgs e)
+        {
+            if (!vulkan) { return; }
+
+            string arma3Folder = Reader(installationFolder + @"\VulkanIsPresent.txt", true);
+
+            Process.Start(arma3Folder + @"\arma3launcher.exe");
+            this.Close();
+        }
+
         private void CK_Vulkan_CheckedEvent(object sender, RoutedEventArgs e) //HERE
         {
             string arma3Folder = Reader(installationFolder + @"\VulkanIsPresent.txt", true);
@@ -421,6 +443,7 @@ namespace TRO14_Downloader
                 App.SendReport(error, "failed to disable Vulkan API" + error.Message);
             }
         }
+        #endregion
 
         //Function to check packs presence/update
         void OpeningChecker() //HERE
@@ -441,7 +464,8 @@ namespace TRO14_Downloader
 
                     //Declaring installation folder and calling the Downloader
                     string thisUri = installationFolder + @"\Demo.json";
-                    Downloader(jsonDemoLink, thisUri);
+                    //Downloader(jsonDemoLink, thisUri);
+                    Downloader(jsonLinks[0], thisUri);
 
                     //Calling the Reader to create a "modpack".json controller
                     string jsonController = Reader(thisUri);
@@ -461,7 +485,8 @@ namespace TRO14_Downloader
                     InstalledPacksCheck(1);
 
                     string thisUri = installationFolder + @"\Lite.json";
-                    Downloader(jsonLiteLink, thisUri);
+                    //Downloader(jsonLiteLink, thisUri);
+                    Downloader(jsonLinks[1], thisUri);
 
                     string jsonController = Reader(thisUri);
                     ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
@@ -479,7 +504,8 @@ namespace TRO14_Downloader
                     InstalledPacksCheck(2);
 
                     string thisUri = installationFolder + @"\Standard.json";
-                    Downloader(jsonStandardLink, thisUri);
+                    //Downloader(jsonStandardLink, thisUri);
+                    Downloader(jsonLinks[2], thisUri);
 
                     string jsonController = Reader(thisUri);
                     ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
@@ -497,7 +523,8 @@ namespace TRO14_Downloader
                     InstalledPacksCheck(3);
 
                     string thisUri = installationFolder + @"\OldTimes.json";
-                    Downloader(jsonOldTimesLink, thisUri);
+                    //Downloader(jsonOldTimesLink, thisUri);
+                    Downloader(jsonLinks[3], thisUri);
 
                     string jsonController = Reader(thisUri);
                     ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
@@ -515,7 +542,8 @@ namespace TRO14_Downloader
                     InstalledPacksCheck(4);
 
                     string thisUri = installationFolder + @"\Future.json";
-                    Downloader(jsonFutureLink, thisUri);
+                    //Downloader(jsonFutureLink, thisUri);
+                    Downloader(jsonLinks[4], thisUri);
 
                     string jsonController = Reader(thisUri);
                     ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
@@ -576,10 +604,11 @@ namespace TRO14_Downloader
             }
         }
 
-        //Re-callable Readers
+        #region Readers
+        //Re-callable Readers (overloaded for single lines reading)
         string Reader(string uri)
         {
-            StreamReader reader = new StreamReader(uri);
+            reader = new StreamReader(uri);
             string returnString = reader.ReadToEnd();
             reader.Close();
 
@@ -594,7 +623,7 @@ namespace TRO14_Downloader
 
             return returnString;
         }
-        //End Readers
+        #endregion
 
         //Function with all first start procedures (check presence and create basic files/roots)
         void FirstStartControl()
@@ -632,7 +661,7 @@ namespace TRO14_Downloader
         //Modular function to light up the "presence led" of a pack
         void InstalledPacksCheck(int ledId)
         {
-            switch(ledId)
+            switch (ledId)
             {
                 case 0:
                     Led_Demo.Visibility = Visibility.Visible;
@@ -661,24 +690,6 @@ namespace TRO14_Downloader
             Packs packsController = JsonConvert.DeserializeObject<Packs>(versionJson);
 
             return packsController;
-        }
-
-        //Standardized and re-callable Message Box
-        void Instructions()
-        {
-            MessageBox.Show("-Import all downloaded packs by dragging them into your ArmA III launcher. \n" +
-                    "-Accept all the Workshop™ subscriptions. \n" +
-                    "-Wait until the mods are downloaded from Steam™.", "Instructions");
-        }
-
-        private void Btn_Start_Click(object sender, RoutedEventArgs e)
-        {
-            if (!vulkan) { return; }
-
-            string arma3Folder = Reader(installationFolder + @"\VulkanIsPresent.txt", true);
-
-            Process.Start(arma3Folder + @"\arma3launcher.exe");
-            this.Close();
         }
     }
 
