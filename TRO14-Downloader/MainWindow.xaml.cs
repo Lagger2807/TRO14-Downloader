@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
+using TRO14_Downloader.CustomClasses;
 
 namespace TRO14_Downloader
 {
@@ -62,11 +63,41 @@ namespace TRO14_Downloader
         {
             try
             {
-                //Threaded first-start control of files and roots
-                await Task.Run(() => FirstStartControl());
+                ////Threaded first-start control of files and roots
+                //await Task.Run(() => FirstStartControl());
 
-                //Threaded on opening control of download versions and updates
-                await Task.Run(() => OpeningChecker());
+                ////Threaded on opening control of download versions and updates
+                //await Task.Run(() => OpeningChecker());
+
+                //DBManager Tester------------------------------
+                DBManager dbManager = new DBManager();
+                dbManager.InizializeDB();
+
+                ModPacks[] result = dbManager.ExecuteQueryOnModPacks("SELECT * FROM ModPacks");
+
+                foreach(ModPacks item in result)
+                {
+                    MessageBox.Show(item.Name.ToString());
+                }
+                //---------------------------------------------
+
+                //GitHub direct JSON read Tester----------------------
+
+                WebClient webClient = new WebClient();
+
+                int i = 0;
+
+                foreach(string item in jsonLinks)
+                {
+                    string stringa = webClient.DownloadString(jsonLinks[i]);
+
+                    MessageBox.Show(stringa);
+
+                    i++;
+                }
+
+                //----------------------------------------------------
+                
             }
             catch (Exception error)
             {
