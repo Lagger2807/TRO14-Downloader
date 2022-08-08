@@ -31,27 +31,7 @@ namespace TRO14_Downloader
         StreamReader reader;
         Instructions instructions;
 
-        #region DownloadLinks
-        public string vulkanAPIFiles = "https://github.com/Lagger2807/TRO14-Files/raw/main/VulkanFiles.zip";
-
-        public string[] jsonLinks = new string[]
-        {
-            "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/Demo.json",
-            "https://github.com/Lagger2807/TRO14-Files/raw/main/Lite.json",
-            "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/Standard.json",
-            "https://github.com/Lagger2807/TRO14-Files/raw/main/OldTimes.json",
-            "https://github.com/Lagger2807/TRO14-Files/raw/main/Future.json"
-        };
-
-        public string[] packsLinks = new string[]
-        {
-            "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Demo%20.html",
-            "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Lite.html",
-            "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Standard.html",
-            "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20OldTimes.html",
-            "https://github.com/Lagger2807/TRO14-Files/raw/main/TROP%20Future.html"
-        };
-        #endregion
+        public const string jsonReadURL = "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/DB%20Inizializer.json";
 
         public MainWindow()
         {
@@ -63,48 +43,22 @@ namespace TRO14_Downloader
         {
             try
             {
-                ////Threaded first-start control of files and roots
-                //await Task.Run(() => FirstStartControl());
+                //Threaded first-start control of files and roots
+                await Task.Run(() => FirstStartControl());
 
-                ////Threaded on opening control of download versions and updates
-                //await Task.Run(() => OpeningChecker());
+                //Threaded on opening control of download versions and updates
+                await Task.Run(() => OpeningChecker());
 
-                //DBManager Tester------------------------------
                 DBManager dbManager = new DBManager();
-                dbManager.InizializeDB();
+                dbManager.InizializeDB(jsonReadURL);
 
-                ModPacks[] result = dbManager.ExecuteQueryOnModPacks("SELECT * FROM ModPacks");
-
-                foreach(ModPacks item in result)
-                {
-                    MessageBox.Show(item.Name.ToString());
-                }
-                //---------------------------------------------
-
-                //GitHub direct JSON read Tester----------------------
-
-                WebClient webClient = new WebClient();
-
-                int i = 0;
-
-                foreach(string item in jsonLinks)
-                {
-                    string stringa = webClient.DownloadString(jsonLinks[i]);
-
-                    MessageBox.Show(stringa);
-
-                    i++;
-                }
-
-                //----------------------------------------------------
-                
             }
             catch (Exception error)
             {
                 //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "Initialization error" + error.Message);
             }
-            
+
         }
 
         private async void Btn_Download_Click(object sender, RoutedEventArgs e)
@@ -119,7 +73,7 @@ namespace TRO14_Downloader
                 {
                     try
                     {
-                        await Task.Run(() =>Downloader(packsLinks[0], downloadFolder + @"\Demo.html"));
+                        await Task.Run(() => Downloader(packsLinks[0], downloadFolder + @"\Demo.html"));
 
                         string thisUri = installationFolder + @"\Demo.json";
                         if (!File.Exists(thisUri))
@@ -304,12 +258,12 @@ namespace TRO14_Downloader
                 instructions = new Instructions();
                 await Task.Run(() => instructions.Show());
             }
-            catch(Exception error)
+            catch (Exception error)
             {
                 //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "Download failed" + error.Message);
             }
-            
+
         }
 
         private void Btn_Tutorial_Click(object sender, RoutedEventArgs e)
@@ -331,12 +285,12 @@ namespace TRO14_Downloader
                     "Future: " + packsController.Future + ".",
                     "Versions");
             }
-            catch(Exception error)
+            catch (Exception error)
             {
                 //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "An error occurred during the installed packs check" + error.Message);
             }
-            
+
         }
 
         private void Btn_Vulkan_Click(object sender, RoutedEventArgs e)
@@ -350,7 +304,7 @@ namespace TRO14_Downloader
                 string arma3Folder;
 
                 //Open folder selection dialog to user
-                System.Windows.Forms.FolderBrowserDialog folderDlg = new System.Windows.Forms.FolderBrowserDialog();                
+                System.Windows.Forms.FolderBrowserDialog folderDlg = new System.Windows.Forms.FolderBrowserDialog();
                 folderDlg.ShowNewFolderButton = false; //Disable new folders creation
 
                 //Show dialog to user
@@ -382,7 +336,7 @@ namespace TRO14_Downloader
 
                 //Unzip files in the ArmA3 directory
                 ZipFile.ExtractToDirectory(downloadFolder + @"\VulkanFiles.zip", arma3Folder);
-                
+
                 //Check if the placeholder file is present and if the dialog has been completed
                 if (File.Exists(installationFolder + @"\VulkanIsPresent.txt") && dialogOK)
                 {
@@ -393,7 +347,7 @@ namespace TRO14_Downloader
                     Text_VulkanIsPresent.Visibility = Visibility.Visible;
                     Led_Vulkan.Visibility = Visibility.Visible;
                 }
-                else if(!File.Exists(installationFolder + @"\VulkanIsPresent.txt") && dialogOK)
+                else if (!File.Exists(installationFolder + @"\VulkanIsPresent.txt") && dialogOK)
                 {
                     //Create the placeholder file to know if VulkanAPI is present
                     StreamWriter writer = new StreamWriter("VulkanIsPresent.txt");
@@ -410,7 +364,7 @@ namespace TRO14_Downloader
 
                 MessageBox.Show("Vulkan libraries installed successfully");
             }
-            catch(Exception error)
+            catch (Exception error)
             {
                 //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "Vulkan API download failed" + error.Message);
@@ -444,12 +398,12 @@ namespace TRO14_Downloader
 
                 MessageBox.Show("Disable the Battleye™ service in the ArmA III launcher to start the game");
             }
-            catch(Exception error)
+            catch (Exception error)
             {
                 //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "failed to enable Vulkan API" + error.Message);
             }
-        } 
+        }
 
         private void CK_Vulkan_UncheckedEvent(object sender, RoutedEventArgs e) //HERE
         {
@@ -468,7 +422,7 @@ namespace TRO14_Downloader
 
                 MessageBox.Show("You can enable the Battleye™ service in the ArmA III launcher");
             }
-            catch(Exception error)
+            catch (Exception error)
             {
                 //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "failed to disable Vulkan API" + error.Message);
