@@ -1,5 +1,6 @@
 ﻿using CrashReporterDotNET;
 using Newtonsoft.Json;
+using SQLite;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -23,14 +24,17 @@ namespace TRO14_Downloader
 
         //Global installation folder
         public string installationFolder = Environment.CurrentDirectory;
+        public string dbURI = Path.Combine(Environment.CurrentDirectory, "Downloader.db");
 
-        //State variables
         public bool vulkan;
+        public string vulkanAPIFiles;
 
         //Cached objects
+        DBManager dbManager = new DBManager();
         StreamReader reader;
         Instructions instructions;
 
+        //Global constants
         public const string jsonReadURL = "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/DB%20Inizializer.json";
 
         public MainWindow()
@@ -48,10 +52,6 @@ namespace TRO14_Downloader
 
                 //Threaded on opening control of download versions and updates
                 await Task.Run(() => OpeningChecker());
-
-                DBManager dbManager = new DBManager();
-                dbManager.InizializeDB(jsonReadURL);
-
             }
             catch (Exception error)
             {
@@ -63,207 +63,206 @@ namespace TRO14_Downloader
 
         private async void Btn_Download_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                //Set download root folder
-                string downloadFolder = installationFolder + @"\Download";
+            //try
+            //{
+            //    //Set download root folder
+            //    string downloadFolder = installationFolder + @"\Download";
 
-                //Check if Demo checkbox is checked
-                if (CK_Demo.IsChecked.Value)
-                {
-                    try
-                    {
-                        await Task.Run(() => Downloader(packsLinks[0], downloadFolder + @"\Demo.html"));
+            //    //Check if Demo checkbox is checked
+            //    if (CK_Demo.IsChecked.Value)
+            //    {
+            //        try
+            //        {
+            //            await Task.Run(() => Downloader(packsLinks[0], downloadFolder + @"\Demo.html"));
 
-                        string thisUri = installationFolder + @"\Demo.json";
-                        if (!File.Exists(thisUri))
-                        {
-                            await Task.Run(() => Downloader(jsonLinks[0], thisUri));
-                        }
+            //            string thisUri = installationFolder + @"\Demo.json";
+            //            if (!File.Exists(thisUri))
+            //            {
+            //                await Task.Run(() => Downloader(jsonLinks[0], thisUri));
+            //            }
 
-                        string jsonController = Reader(thisUri);
-                        ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-                        Packs packsController = packVersionController();
+            //            string jsonController = Reader(thisUri);
+            //            ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
+            //            Packs packsController = packVersionController();
 
-                        packsController.Demo = Pack.Version;
+            //            packsController.Demo = Pack.Version;
 
-                        string packsJson = JsonConvert.SerializeObject(packsController);
+            //            string packsJson = JsonConvert.SerializeObject(packsController);
 
-                        using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
-                        {
-                            byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
-                            packsJsonFile.Write(content, 0, content.Length);
-                            packsJsonFile.Close();
-                        }
+            //            using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
+            //            {
+            //                byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
+            //                packsJsonFile.Write(content, 0, content.Length);
+            //                packsJsonFile.Close();
+            //            }
 
-                        Led_Demo.Fill = Brushes.Green;
-                        Led_Demo.Visibility = Visibility.Visible;
-                    }
-                    catch (Exception error)
-                    {
-                        MessageBox.Show(error.Message);
-                    }
-                }
+            //            Led_Demo.Fill = Brushes.Green;
+            //            Led_Demo.Visibility = Visibility.Visible;
+            //        }
+            //        catch (Exception error)
+            //        {
+            //            MessageBox.Show(error.Message);
+            //        }
+            //    }
 
-                //Check if Lite checkbox is checked
-                if (CK_Lite.IsChecked.Value)
-                {
-                    try
-                    {
-                        await Task.Run(() => Downloader(packsLinks[1], downloadFolder + @"\Lite.html"));
+            //    //Check if Lite checkbox is checked
+            //    if (CK_Lite.IsChecked.Value)
+            //    {
+            //        try
+            //        {
+            //            await Task.Run(() => Downloader(packsLinks[1], downloadFolder + @"\Lite.html"));
 
-                        string thisUri = installationFolder + @"\Lite.json";
-                        if (!File.Exists(thisUri))
-                        {
-                            await Task.Run(() => Downloader(jsonLinks[1], thisUri));
-                        }
+            //            string thisUri = installationFolder + @"\Lite.json";
+            //            if (!File.Exists(thisUri))
+            //            {
+            //                await Task.Run(() => Downloader(jsonLinks[1], thisUri));
+            //            }
 
-                        string jsonController = Reader(thisUri);
-                        ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-                        Packs packsController = packVersionController();
+            //            string jsonController = Reader(thisUri);
+            //            ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
+            //            Packs packsController = packVersionController();
 
-                        packsController.Lite = Pack.Version;
+            //            packsController.Lite = Pack.Version;
 
-                        string packsJson = JsonConvert.SerializeObject(packsController);
+            //            string packsJson = JsonConvert.SerializeObject(packsController);
 
-                        using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
-                        {
-                            byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
-                            packsJsonFile.Write(content, 0, content.Length);
-                            packsJsonFile.Close();
-                        }
+            //            using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
+            //            {
+            //                byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
+            //                packsJsonFile.Write(content, 0, content.Length);
+            //                packsJsonFile.Close();
+            //            }
 
-                        Led_Lite.Fill = Brushes.Green;
-                        Led_Lite.Visibility = Visibility.Visible;
-                    }
-                    catch (Exception error)
-                    {
-                        MessageBox.Show(error.Message);
-                    }
-                }
+            //            Led_Lite.Fill = Brushes.Green;
+            //            Led_Lite.Visibility = Visibility.Visible;
+            //        }
+            //        catch (Exception error)
+            //        {
+            //            MessageBox.Show(error.Message);
+            //        }
+            //    }
 
-                //Check if Standard checkbox is checked
-                if (CK_Standard.IsChecked.Value)
-                {
-                    try
-                    {
-                        await Task.Run(() => Downloader(packsLinks[2], downloadFolder + @"\Standard.html"));
+            //    //Check if Standard checkbox is checked
+            //    if (CK_Standard.IsChecked.Value)
+            //    {
+            //        try
+            //        {
+            //            await Task.Run(() => Downloader(packsLinks[2], downloadFolder + @"\Standard.html"));
 
-                        string thisUri = installationFolder + @"\Standard.json";
-                        if (!File.Exists(thisUri))
-                        {
-                            await Task.Run(() => Downloader(jsonLinks[2], thisUri));
-                        }
+            //            string thisUri = installationFolder + @"\Standard.json";
+            //            if (!File.Exists(thisUri))
+            //            {
+            //                await Task.Run(() => Downloader(jsonLinks[2], thisUri));
+            //            }
 
-                        string jsonController = Reader(thisUri);
-                        ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-                        Packs packsController = packVersionController();
+            //            string jsonController = Reader(thisUri);
+            //            ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
+            //            Packs packsController = packVersionController();
 
-                        packsController.Standard = Pack.Version;
+            //            packsController.Standard = Pack.Version;
 
-                        string packsJson = JsonConvert.SerializeObject(packsController);
+            //            string packsJson = JsonConvert.SerializeObject(packsController);
 
-                        using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
-                        {
-                            byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
-                            packsJsonFile.Write(content, 0, content.Length);
-                            packsJsonFile.Close();
-                        }
+            //            using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
+            //            {
+            //                byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
+            //                packsJsonFile.Write(content, 0, content.Length);
+            //                packsJsonFile.Close();
+            //            }
 
-                        Led_Standard.Fill = Brushes.Green;
-                        Led_Standard.Visibility = Visibility.Visible;
-                    }
-                    catch (Exception error)
-                    {
-                        MessageBox.Show(error.Message);
-                    }
-                }
+            //            Led_Standard.Fill = Brushes.Green;
+            //            Led_Standard.Visibility = Visibility.Visible;
+            //        }
+            //        catch (Exception error)
+            //        {
+            //            MessageBox.Show(error.Message);
+            //        }
+            //    }
 
-                //Check if Old Times checkbox is checked
-                if (CK_OldTimes.IsChecked.Value)
-                {
-                    try
-                    {
-                        await Task.Run(() => Downloader(packsLinks[3], downloadFolder + @"\OldTimes.html"));
+            //    //Check if Old Times checkbox is checked
+            //    if (CK_OldTimes.IsChecked.Value)
+            //    {
+            //        try
+            //        {
+            //            await Task.Run(() => Downloader(packsLinks[3], downloadFolder + @"\OldTimes.html"));
 
-                        string thisUri = installationFolder + @"\OldTimes.json";
-                        if (!File.Exists(thisUri))
-                        {
-                            await Task.Run(() => Downloader(jsonLinks[3], thisUri));
-                        }
+            //            string thisUri = installationFolder + @"\OldTimes.json";
+            //            if (!File.Exists(thisUri))
+            //            {
+            //                await Task.Run(() => Downloader(jsonLinks[3], thisUri));
+            //            }
 
-                        string jsonController = Reader(thisUri);
-                        ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-                        Packs packsController = packVersionController();
+            //            string jsonController = Reader(thisUri);
+            //            ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
+            //            Packs packsController = packVersionController();
 
-                        packsController.OldTimes = Pack.Version;
+            //            packsController.OldTimes = Pack.Version;
 
-                        string packsJson = JsonConvert.SerializeObject(packsController);
+            //            string packsJson = JsonConvert.SerializeObject(packsController);
 
-                        using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
-                        {
-                            byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
-                            packsJsonFile.Write(content, 0, content.Length);
-                            packsJsonFile.Close();
-                        }
+            //            using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
+            //            {
+            //                byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
+            //                packsJsonFile.Write(content, 0, content.Length);
+            //                packsJsonFile.Close();
+            //            }
 
-                        Led_OldTimes.Fill = Brushes.Green;
-                        Led_OldTimes.Visibility = Visibility.Visible;
-                    }
-                    catch (Exception error)
-                    {
-                        MessageBox.Show(error.Message);
-                    }
-                }
+            //            Led_OldTimes.Fill = Brushes.Green;
+            //            Led_OldTimes.Visibility = Visibility.Visible;
+            //        }
+            //        catch (Exception error)
+            //        {
+            //            MessageBox.Show(error.Message);
+            //        }
+            //    }
 
-                //Check if Future checkbox is checked
-                if (CK_Future.IsChecked.Value)
-                {
-                    try
-                    {
-                        await Task.Run(() => Downloader(packsLinks[4], downloadFolder + @"\Future.html"));
+            //    //Check if Future checkbox is checked
+            //    if (CK_Future.IsChecked.Value)
+            //    {
+            //        try
+            //        {
+            //            await Task.Run(() => Downloader(packsLinks[4], downloadFolder + @"\Future.html"));
 
-                        string thisUri = installationFolder + @"\Future.json";
-                        if (!File.Exists(thisUri))
-                        {
-                            await Task.Run(() => Downloader(jsonLinks[4], thisUri));
-                        }
+            //            string thisUri = installationFolder + @"\Future.json";
+            //            if (!File.Exists(thisUri))
+            //            {
+            //                await Task.Run(() => Downloader(jsonLinks[4], thisUri));
+            //            }
 
-                        string jsonController = Reader(thisUri);
-                        ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-                        Packs packsController = packVersionController();
+            //            string jsonController = Reader(thisUri);
+            //            ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
+            //            Packs packsController = packVersionController();
 
-                        packsController.Future = Pack.Version;
+            //            packsController.Future = Pack.Version;
 
-                        string packsJson = JsonConvert.SerializeObject(packsController);
+            //            string packsJson = JsonConvert.SerializeObject(packsController);
 
-                        using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
-                        {
-                            byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
-                            packsJsonFile.Write(content, 0, content.Length);
-                            packsJsonFile.Close();
-                        }
+            //            using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
+            //            {
+            //                byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
+            //                packsJsonFile.Write(content, 0, content.Length);
+            //                packsJsonFile.Close();
+            //            }
 
-                        Led_Future.Fill = Brushes.Green;
-                        Led_Future.Visibility = Visibility.Visible;
-                    }
-                    catch (Exception error)
-                    {
-                        MessageBox.Show(error.Message);
-                    }
-                }
+            //            Led_Future.Fill = Brushes.Green;
+            //            Led_Future.Visibility = Visibility.Visible;
+            //        }
+            //        catch (Exception error)
+            //        {
+            //            MessageBox.Show(error.Message);
+            //        }
+            //    }
 
-                //Open the download folder and instructions
-                Process.Start(downloadFolder);
-                instructions = new Instructions();
-                await Task.Run(() => instructions.Show());
-            }
-            catch (Exception error)
-            {
-                //Send Crash report via CrashReportDotNet API
-                App.SendReport(error, "Download failed" + error.Message);
-            }
-
+            //    //Open the download folder and instructions
+            //    Process.Start(downloadFolder);
+            //    instructions = new Instructions();
+            //    await Task.Run(() => instructions.Show());
+            //}
+            //catch (Exception error)
+            //{
+            //    //Send Crash report via CrashReportDotNet API
+            //    App.SendReport(error, "Download failed" + error.Message);
+            //}
         }
 
         private void Btn_Tutorial_Click(object sender, RoutedEventArgs e)
@@ -274,22 +273,22 @@ namespace TRO14_Downloader
 
         private void Btn_Visualizza_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                string versionJson = Reader(installationFolder + @"\versions.json");
-                Packs packsController = JsonConvert.DeserializeObject<Packs>(versionJson);
-                MessageBox.Show("Demo: " + packsController.Demo + ".\n" +
-                    "Lite: " + packsController.Lite + ".\n" +
-                    "Standard: " + packsController.Standard + ".\n" +
-                    "Old Times: " + packsController.OldTimes + ".\n" +
-                    "Future: " + packsController.Future + ".",
-                    "Versions");
-            }
-            catch (Exception error)
-            {
-                //Send Crash report via CrashReportDotNet API
-                App.SendReport(error, "An error occurred during the installed packs check" + error.Message);
-            }
+            //try
+            //{
+            //    string versionJson = Reader(installationFolder + @"\versions.json");
+            //    Packs packsController = JsonConvert.DeserializeObject<Packs>(versionJson);
+            //    MessageBox.Show("Demo: " + packsController.Demo + ".\n" +
+            //        "Lite: " + packsController.Lite + ".\n" +
+            //        "Standard: " + packsController.Standard + ".\n" +
+            //        "Old Times: " + packsController.OldTimes + ".\n" +
+            //        "Future: " + packsController.Future + ".",
+            //        "Versions");
+            //}
+            //catch (Exception error)
+            //{
+            //    //Send Crash report via CrashReportDotNet API
+            //    App.SendReport(error, "An error occurred during the installed packs check" + error.Message);
+            //}
 
         }
 
@@ -430,162 +429,17 @@ namespace TRO14_Downloader
         }
         #endregion
 
-        //Function to check packs presence/update
-        void OpeningChecker() //HERE
-        {
-            //calling the versions.json controller
-            Packs packsController = packVersionController();
-
-            //All comments done in the "Demo" selection inside the dispatcher
-            this.Dispatcher.Invoke(() =>
-            {
-                //Optimize code (single Modpack object creation) (ToT)/
-
-                //Demo
-                if (packsController.Demo != 0)
-                {
-                    //Change led state to ON
-                    InstalledPacksCheck(0);
-
-                    //Declaring installation folder and calling the Downloader
-                    string thisUri = installationFolder + @"\Demo.json";
-                    //Downloader(jsonDemoLink, thisUri);
-                    Downloader(jsonLinks[0], thisUri);
-
-                    //Calling the Reader to create a "modpack".json controller
-                    string jsonController = Reader(thisUri);
-                    ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-
-                    //Check if the pack is up to date
-                    if (Pack.Version > packsController.Demo)
-                    {
-                        Led_Demo.Fill = Brushes.Red;
-                        MessageBox.Show("Demo update found!");
-                    }
-                }
-
-                //Lite
-                if (packsController.Lite != 0)
-                {
-                    InstalledPacksCheck(1);
-
-                    string thisUri = installationFolder + @"\Lite.json";
-                    //Downloader(jsonLiteLink, thisUri);
-                    Downloader(jsonLinks[1], thisUri);
-
-                    string jsonController = Reader(thisUri);
-                    ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-
-                    if (Pack.Version > packsController.Lite)
-                    {
-                        Led_Lite.Fill = Brushes.Red;
-                        MessageBox.Show("Lite update found!");
-                    }
-                }
-
-                //Standard
-                if (packsController.Standard != 0)
-                {
-                    InstalledPacksCheck(2);
-
-                    string thisUri = installationFolder + @"\Standard.json";
-                    //Downloader(jsonStandardLink, thisUri);
-                    Downloader(jsonLinks[2], thisUri);
-
-                    string jsonController = Reader(thisUri);
-                    ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-
-                    if (Pack.Version > packsController.Standard)
-                    {
-                        Led_Standard.Fill = Brushes.Red;
-                        MessageBox.Show("Standard update found!");
-                    }
-                }
-
-                //OldTimes
-                if (packsController.OldTimes != 0)
-                {
-                    InstalledPacksCheck(3);
-
-                    string thisUri = installationFolder + @"\OldTimes.json";
-                    //Downloader(jsonOldTimesLink, thisUri);
-                    Downloader(jsonLinks[3], thisUri);
-
-                    string jsonController = Reader(thisUri);
-                    ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-
-                    if (Pack.Version > packsController.OldTimes)
-                    {
-                        Led_OldTimes.Fill = Brushes.Red;
-                        MessageBox.Show("Old Times update found!");
-                    }
-                }
-
-                //Future
-                if (packsController.Future != 0)
-                {
-                    InstalledPacksCheck(4);
-
-                    string thisUri = installationFolder + @"\Future.json";
-                    //Downloader(jsonFutureLink, thisUri);
-                    Downloader(jsonLinks[4], thisUri);
-
-                    string jsonController = Reader(thisUri);
-                    ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-
-                    if (Pack.Version > packsController.Future)
-                    {
-                        Led_Future.Fill = Brushes.Red;
-                        MessageBox.Show("Future update found!");
-                    }
-                }
-
-                string vulkanFile = installationFolder + @"\VulkanIsPresent.txt";
-
-                //Check if the VulkanAPIs are installed
-                if (File.Exists(vulkanFile))
-                {
-                    //Read the ArmA3 directory
-                    string arma3Folder = Reader(vulkanFile, true);
-
-                    //Show the VulkanAPI checkbox, text and led
-                    CK_Vulkan.Visibility = Visibility.Visible;
-                    Text_VulkanIsPresent.Visibility = Visibility.Visible;
-                    Led_Vulkan.Visibility = Visibility.Visible;
-
-                    if (File.Exists(arma3Folder + @"\d3d11.dll") && File.Exists(arma3Folder + @"\dxgi.dll"))
-                    {
-                        vulkan = true; //Sets the global VulkanAPI presence variable on true
-                        CK_Vulkan.IsChecked = true;
-                    }
-                    else if (File.Exists(arma3Folder + @"\d3d11.dllOFF") && File.Exists(arma3Folder + @"\dxgi.dllOFF"))
-                    {
-                        vulkan = false; //Sets the global VulkanAPI presence variable on false
-                        CK_Vulkan.IsChecked = false;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Vulkan API damaged, UI enabler disabled");
-                        CK_Vulkan.IsEnabled = false;
-                    }
-                }
-            });
-        }
-
         //Re-callable Downloader
         void Downloader(string dwLink, string uri)
         {
-            using (WebClient wc = new WebClient())
+            try
             {
-                wc.Headers.Add("a", "a");
-                try
-                {
-                    wc.DownloadFile(dwLink, uri);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.ToString());
-                }
+                WebClient wc = new WebClient();
+                wc.DownloadFile(dwLink, uri);
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
             }
         }
 
@@ -615,30 +469,103 @@ namespace TRO14_Downloader
         {
             this.Dispatcher.Invoke(() =>
             {
-                if (!File.Exists(installationFolder + @"\versions.json"))
-                {
-                    Packs packs = new Packs()
-                    {
-                        Demo = 0,
-                        Lite = 0,
-                        Standard = 0,
-                        OldTimes = 0,
-                        Future = 0,
-                    };
-
-                    string packsJson = JsonConvert.SerializeObject(packs);
-
-                    using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
-                    {
-                        byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
-                        packsJsonFile.Write(content, 0, content.Length);
-                        packsJsonFile.Close();
-                    }
-                }
-
                 if (!Directory.Exists(installationFolder + @"\Download"))
                 {
                     Directory.CreateDirectory(installationFolder + @"\Download");
+                }
+
+                dbManager.InizializeDB(jsonReadURL);
+            });
+        }
+
+        //Function to check packs presence/update
+        //Finish DB Conversion
+        void OpeningChecker()
+        {
+            //Create the database connection
+            var db = new SQLiteConnection(dbURI);
+
+            this.Dispatcher.Invoke(() =>
+            {
+                //Create a query object with all modpacks informations
+                ModPacks[] modPacks = db.Query<ModPacks>("SELECT * FROM ModPacks").ToArray();
+                //Starts the web client
+                WebClient wc = new WebClient();
+
+                //Iterate all modpacks and checks their versions
+                for (int i = 0; i < modPacks.Length; i++)
+                {
+                    //Reads the version from the link saved inside the DB and deserialize it
+                    string versionJson = wc.DownloadString(modPacks[i].VersionURL);
+                    ModPack singleModPack = JsonConvert.DeserializeObject<ModPack>(versionJson);
+
+                    //For every single modpack checks the version and sets the UI state, then gives notification
+                    if (modPacks[i].Version < singleModPack.Version)
+                    {
+                        switch (modPacks[i].Name)
+                        {
+                            case "Demo":
+                                InstalledPacksCheck(0);
+                                Led_Demo.Fill = Brushes.Red;
+                                break;
+
+                            case "Lite":
+                                InstalledPacksCheck(1);
+                                Led_Lite.Fill = Brushes.Red;
+                                break;
+
+                            case "Standard":
+                                InstalledPacksCheck(2);
+                                Led_Standard.Fill = Brushes.Red;
+                                break;
+
+                            case "Old Times":
+                                InstalledPacksCheck(3);
+                                Led_OldTimes.Fill = Brushes.Red;
+                                break;
+
+                            case "Future":
+                                InstalledPacksCheck(4);
+                                Led_Future.Fill = Brushes.Red;
+                                break;
+
+                            default:
+                                break;
+                        }
+
+                        MessageBox.Show(modPacks[i].Name + " update found!");
+                    }
+                }
+
+                VulkanFiles[] vulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles").ToArray();
+
+                //Check if the VulkanAPIs are installed
+                if (vulkanFiles[0].Downloaded > 0 && vulkanFiles[1].Downloaded > 0)
+                {
+                    //Read the ArmA3 directory
+                    Paths[] paths = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
+                    string arma3Folder = paths[0].PathURI;
+
+                    //Show the VulkanAPI checkbox, text and led
+                    CK_Vulkan.Visibility = Visibility.Visible;
+                    Text_VulkanIsPresent.Visibility = Visibility.Visible;
+                    Led_Vulkan.Visibility = Visibility.Visible;
+
+                    if (File.Exists(arma3Folder + @"\d3d11.dll") && File.Exists(arma3Folder + @"\dxgi.dll"))
+                    {
+                        vulkan = true; //Sets the global VulkanAPI presence variable on true
+                        CK_Vulkan.IsChecked = true;
+                    }
+                    else if (File.Exists(arma3Folder + @"\d3d11.dllOFF") && File.Exists(arma3Folder + @"\dxgi.dllOFF"))
+                    {
+                        vulkan = false; //Sets the global VulkanAPI presence variable on false
+                        CK_Vulkan.IsChecked = false;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Vulkan API damaged, UI enabler disabled");
+                        CK_Vulkan.IsEnabled = false;
+                    }
                 }
             });
         }
@@ -667,30 +594,11 @@ namespace TRO14_Downloader
                     break;
             }
         }
-
-        //Read and Deserialize versions.json for version checking
-        Packs packVersionController()
-        {
-            string versionJson = Reader(installationFolder + @"\versions.json");
-            Packs packsController = JsonConvert.DeserializeObject<Packs>(versionJson);
-
-            return packsController;
-        }
     }
 
     public class ModPack
     {
-        public string Pack { get; set; }
         public float Version { get; set; }
-    }
-
-    public class Packs
-    {
-        public float Demo { get; set; }
-        public float Lite { get; set; }
-        public float Standard { get; set; }
-        public float OldTimes { get; set; }
-        public float Future { get; set; }
     }
 
     public partial class App : Application

@@ -26,6 +26,8 @@ namespace TRO14_Downloader.CustomClasses
                 CreateTables(db, url);
             else
                 InizializeTables(db, url);
+
+            db.Close();
         }
 
         //Create the tables and execute the inizialization algorithm
@@ -36,6 +38,7 @@ namespace TRO14_Downloader.CustomClasses
             db.CreateTable<VulkanFiles>();
             db.CreateTable<AllocDLLs>();
             db.CreateTable<DownloadLinks>();
+            db.CreateTable<Profiles>();
 
             InizializeTables(db, url);
         }
@@ -57,7 +60,7 @@ namespace TRO14_Downloader.CustomClasses
                 if (recordQuery.Length <= 0)
                     db.Insert(downloadLink[i]);
                 else
-                    db.Query<DownloadLinks>("UPDATE DownloadLinks SET VURL = '" + downloadLink[i].VURL + "'AND URL = '" + downloadLink[i].URL + "' WHERE Type = '" + downloadLink[i].Type + "' AND Name = '" + downloadLink[i].Name + "'"); 
+                    db.Query<DownloadLinks>("UPDATE DownloadLinks SET VURL = '" + downloadLink[i].VURL + "', URL = '" + downloadLink[i].URL + "' WHERE Type = '" + downloadLink[i].Type + "' AND Name = '" + downloadLink[i].Name + "'");
             }
 
             //Stores all DownloadLinks table elements into an array
@@ -76,7 +79,7 @@ namespace TRO14_Downloader.CustomClasses
                         if (modpackQuery.Length <= 0)
                             db.Insert(modpack);
                         else
-                            db.Query<ModPacks>("UPDATE ModPacks SET VersionUrl = '" + modpack.VersionURL + "' AND DownloadURL = '" + modpack.DownloadURL + "'");
+                            db.Query<ModPacks>("UPDATE ModPacks SET VersionURL = '" + modpack.VersionURL + "', DownloadURL = '" + modpack.DownloadURL + "' WHERE Name = '" + modpack.Name + "'");
                         break;
 
                     case "VulkanFiles":
@@ -86,7 +89,7 @@ namespace TRO14_Downloader.CustomClasses
                         if (vulkanFilesQuery.Length <= 0)
                             db.Insert(vulkanFile);
                         else
-                            db.Query<VulkanFiles>("UPDATE VulkanFiles SET DownloadURL = '" + vulkanFile.DownloadURL + "'");
+                            db.Query<VulkanFiles>("UPDATE VulkanFiles SET DownloadURL = '" + vulkanFile.DownloadURL + "' WHERE Name = '" + vulkanFile.Name + "'");
                         break;
 
                     case "AllocDLLs":
@@ -96,7 +99,17 @@ namespace TRO14_Downloader.CustomClasses
                         if (allocatorQuery.Length <= 0)
                             db.Insert(allocator);
                         else
-                            db.Query<AllocDLLs>("UPDATE AllocDLLs SET DownloadURL = '" + allocator.DownloadURL + "'");
+                            db.Query<AllocDLLs>("UPDATE AllocDLLs SET DownloadURL = '" + allocator.DownloadURL + "' WHERE Name = '" + allocator.Name + "'");
+                        break;
+
+                    case "Profiles":
+                        Profiles profile = new Profiles { Name = recordsInTable[i].Name, DownloadURL = recordsInTable[i].URL };
+                        Profiles[] profileQuery = db.Query<Profiles>("SELECT * FROM Profiles WHERE Name = '" + profile.Name + "'").ToArray();
+
+                        if (profileQuery.Length <= 0)
+                            db.Insert(profile);
+                        else
+                            db.Query<Profiles>("UPDATE Profiles SET DownloadURL = '" + profile.DownloadURL + "' WHERE Name = '" + profile.Name + "'");
                         break;
 
                     default:
@@ -148,6 +161,15 @@ namespace TRO14_Downloader.CustomClasses
     }
 
     public class AllocDLLs
+    {
+        [PrimaryKey, AutoIncrement]
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string DownloadURL { get; set; }
+        public int Downloaded { get; set; }
+    }
+    
+    public class Profiles
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
