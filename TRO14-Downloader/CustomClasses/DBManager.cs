@@ -48,6 +48,7 @@ namespace TRO14_Downloader.CustomClasses
             //Create the web client for the web reading
             WebClient webClient = new WebClient();
             string downloadedString = webClient.DownloadString(url);
+            webClient.Dispose(); //Dispose webClient object leaving its resources to the GC
             
             //Deserialize the readed json inside a List and then convert it to an Array for optimization purposes
             DownloadLinks[] downloadLink = JsonConvert.DeserializeObject<List<DownloadLinks>>(downloadedString).ToArray();
@@ -116,6 +117,9 @@ namespace TRO14_Downloader.CustomClasses
                         break;
                 }
             }
+
+
+            db.Dispose();
         }
     }
 
@@ -124,7 +128,7 @@ namespace TRO14_Downloader.CustomClasses
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
         public string Name { get; set; }
-        public float Version { get; set; }
+        public string Version { get; set; }
         public string VersionURL { get; set; }
         public string DownloadURL { get; set; }
         public int Downloaded { get; set; }

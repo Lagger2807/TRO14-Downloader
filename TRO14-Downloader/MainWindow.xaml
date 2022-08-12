@@ -38,29 +38,28 @@
                     </Grid.RowDefinitions>
 
                     <Rectangle Grid.Column="1" Grid.ColumnSpan="7" Fill="#7FF4F4F5" HorizontalAlignment="Stretch" Grid.Row="1" Grid.RowSpan="8" VerticalAlignment="Stretch" StrokeThickness="0" RadiusX="15" RadiusY="15"/>
-
                     <!--Demo-->
-                    <CheckBox Name="CK_Demo"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" Cursor="Hand"/>
+                    <CheckBox Name="CK_Demo"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" Cursor="Hand" Click="CK_Demo_Click"/>
                     <Label Name="Text_Demo" Content="Demo" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="2" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
                     <Ellipse Name="Led_Demo" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="2" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
 
                     <!--Lite-->
-                    <CheckBox Name="CK_Lite"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" Cursor="Hand"/>
+                    <CheckBox Name="CK_Lite"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" Cursor="Hand" Click="CK_Lite_Click"/>
                     <Label Name="Text_Lite" Content="Lite" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
                     <Ellipse Name="Led_Lite" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="3" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
 
                     <!--Standard-->
-                    <CheckBox Name="CK_Standard"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Cursor="Hand"/>
+                    <CheckBox Name="CK_Standard"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Center" Cursor="Hand" Click="CK_Standard_Click"/>
                     <Label Name="Text_Standard" Content="Standard" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="4" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
                     <Ellipse Name="Led_Standard" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="4" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
 
                     <!--OldTimes-->
-                    <CheckBox Name="CK_OldTimes"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="5" VerticalAlignment="Center" Cursor="Hand"/>
+                    <CheckBox Name="CK_OldTimes"  Grid.Column="2" HorizontalAlignment="Center" Grid.Row="5" VerticalAlignment="Center" Cursor="Hand" Click="CK_OldTimes_Click"/>
                     <Label Name="Text_OldTimes" Content="Old Times" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
                     <Ellipse Name="Led_OldTimes" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="5" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
 
                     <!--Future-->
-                    <CheckBox Name="CK_Future" Grid.Column="2" HorizontalAlignment="Center" Grid.Row="6" VerticalAlignment="Center" Cursor="Hand"/>
+                    <CheckBox Name="CK_Future" Grid.Column="2" HorizontalAlignment="Center" Grid.Row="6" VerticalAlignment="Center" Cursor="Hand" Click="CK_Future_Click"/>
                     <Label Name="Text_Future" Content="Future" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
                     <Ellipse Name="Led_Future" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="6" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
 

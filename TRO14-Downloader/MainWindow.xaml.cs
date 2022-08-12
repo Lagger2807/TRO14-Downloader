@@ -22,9 +22,12 @@ namespace TRO14_Downloader
     {
         //OPTIMIZE VULKAN DIRECTORY READING AND FILE EXISTENCE CHECK ACROSS THE CODE o(≧口≦)o
 
-        //Global installation folder
-        public string installationFolder = Environment.CurrentDirectory;
-        public string dbURI = Path.Combine(Environment.CurrentDirectory, "Downloader.db");
+        //Global installation folders
+        public string installationFolder = AppDomain.CurrentDomain.BaseDirectory;
+        public string dbURI;
+
+        //Global variables
+        bool[] modPacksCheckBoxesState = new bool[] { false, false, false, false, false };
 
         public bool vulkan;
         public string vulkanAPIFiles;
@@ -40,6 +43,8 @@ namespace TRO14_Downloader
         public MainWindow()
         {
             InitializeComponent();
+
+            dbURI = Path.Combine(installationFolder, "Downloader.db");
         }
 
         #region Events
@@ -63,206 +68,119 @@ namespace TRO14_Downloader
 
         private async void Btn_Download_Click(object sender, RoutedEventArgs e)
         {
-            //try
-            //{
-            //    //Set download root folder
-            //    string downloadFolder = installationFolder + @"\Download";
+            try
+            {
+                //Declare check variable to see if something has been checked
+                bool isSomethingSelected = false;
 
-            //    //Check if Demo checkbox is checked
-            //    if (CK_Demo.IsChecked.Value)
-            //    {
-            //        try
-            //        {
-            //            await Task.Run(() => Downloader(packsLinks[0], downloadFolder + @"\Demo.html"));
+                //Starts SQL and Web Client connections
+                var db = new SQLiteConnection(dbURI);
+                WebClient webClient = new WebClient();
 
-            //            string thisUri = installationFolder + @"\Demo.json";
-            //            if (!File.Exists(thisUri))
-            //            {
-            //                await Task.Run(() => Downloader(jsonLinks[0], thisUri));
-            //            }
+                //Create the paths object with the download folder location
+                Paths[] downloadFolderPath = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'DownloadFolder'").ToArray();
 
-            //            string jsonController = Reader(thisUri);
-            //            ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-            //            Packs packsController = packVersionController();
+                //For every checkbox execute all the instructions
+                for (int i = 0; i < modPacksCheckBoxesState.Length; i++)
+                {
+                    //Check if the box is checked
+                    if (modPacksCheckBoxesState[i])
+                    {
+                        //Set the variable on true, meaning that at leat 1 box was checked
+                        isSomethingSelected = true;
 
-            //            packsController.Demo = Pack.Version;
+                        //Check which box was selected and execute the right code (every comment in case 0)
+                        switch (i)
+                        {
+                            case 0:
+                                //Select for the right modpack (hardcoded for now) and starts a threaded downloader instance with download information
+                                ModPacks[] modPacks_Demo = db.Query<ModPacks>("SELECT * FROM ModPacks WHERE Name = 'Demo'").ToArray();
+                                await Task.Run(() => Downloader(modPacks_Demo[0].DownloadURL, downloadFolderPath[0].PathURI + @"\Demo.html"));
 
-            //            string packsJson = JsonConvert.SerializeObject(packsController);
+                                //Reads the GitHub json and deserialize it in a single modpack object then updates the db
+                                string demoJson = webClient.DownloadString(modPacks_Demo[0].VersionURL);
+                                ModPack demoModPack = JsonConvert.DeserializeObject<ModPack>(demoJson);
+                                db.Query<ModPacks>("UPDATE ModPacks SET Version = '" + demoModPack.Version + "', Downloaded = 1 WHERE Name = 'Demo'");
 
-            //            using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
-            //            {
-            //                byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
-            //                packsJsonFile.Write(content, 0, content.Length);
-            //                packsJsonFile.Close();
-            //            }
+                                //Updates the UI
+                                Led_Demo.Fill = Brushes.Green;
+                                Led_Demo.Visibility = Visibility.Visible;
+                                break;
 
-            //            Led_Demo.Fill = Brushes.Green;
-            //            Led_Demo.Visibility = Visibility.Visible;
-            //        }
-            //        catch (Exception error)
-            //        {
-            //            MessageBox.Show(error.Message);
-            //        }
-            //    }
+                            case 1:
+                                ModPacks[] modPacks_Lite = db.Query<ModPacks>("SELECT * FROM ModPacks WHERE Name = 'Lite'").ToArray();
+                                await Task.Run(() => Downloader(modPacks_Lite[0].DownloadURL, downloadFolderPath[0].PathURI + @"\Lite.html"));
 
-            //    //Check if Lite checkbox is checked
-            //    if (CK_Lite.IsChecked.Value)
-            //    {
-            //        try
-            //        {
-            //            await Task.Run(() => Downloader(packsLinks[1], downloadFolder + @"\Lite.html"));
+                                string liteJson = webClient.DownloadString(modPacks_Lite[0].VersionURL);
+                                ModPack liteModPack = JsonConvert.DeserializeObject<ModPack>(liteJson);
+                                db.Query<ModPacks>("UPDATE ModPacks SET Version = '" + liteModPack.Version + "', Downloaded = 1 WHERE Name = 'Lite'");
 
-            //            string thisUri = installationFolder + @"\Lite.json";
-            //            if (!File.Exists(thisUri))
-            //            {
-            //                await Task.Run(() => Downloader(jsonLinks[1], thisUri));
-            //            }
+                                Led_Lite.Fill = Brushes.Green;
+                                Led_Lite.Visibility = Visibility.Visible;
+                                break;
 
-            //            string jsonController = Reader(thisUri);
-            //            ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-            //            Packs packsController = packVersionController();
+                            case 2:
+                                ModPacks[] modPacks_Standard = db.Query<ModPacks>("SELECT * FROM ModPacks WHERE Name = 'Standard'").ToArray();
+                                MessageBox.Show(downloadFolderPath[0].PathURI);
+                                await Task.Run(() => Downloader(modPacks_Standard[0].DownloadURL, downloadFolderPath[0].PathURI + @"\Standard.html"));
 
-            //            packsController.Lite = Pack.Version;
+                                string standardJson = webClient.DownloadString(modPacks_Standard[0].VersionURL);
+                                ModPack standardModPack = JsonConvert.DeserializeObject<ModPack>(standardJson);
+                                db.Query<ModPacks>("UPDATE ModPacks SET Version = '" + standardModPack.Version + "', Downloaded = 1 WHERE Name = 'Standard'");
 
-            //            string packsJson = JsonConvert.SerializeObject(packsController);
+                                Led_Standard.Fill = Brushes.Green;
+                                Led_Standard.Visibility = Visibility.Visible;
+                                break;
 
-            //            using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
-            //            {
-            //                byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
-            //                packsJsonFile.Write(content, 0, content.Length);
-            //                packsJsonFile.Close();
-            //            }
+                            case 3:
+                                ModPacks[] modPacks_OldTimes = db.Query<ModPacks>("SELECT * FROM ModPacks WHERE Name = 'Old Times'").ToArray();
+                                await Task.Run(() => Downloader(modPacks_OldTimes[0].DownloadURL, downloadFolderPath[0].PathURI + @"\OldTimes.html"));
 
-            //            Led_Lite.Fill = Brushes.Green;
-            //            Led_Lite.Visibility = Visibility.Visible;
-            //        }
-            //        catch (Exception error)
-            //        {
-            //            MessageBox.Show(error.Message);
-            //        }
-            //    }
+                                string oldTimeJson = webClient.DownloadString(modPacks_OldTimes[0].VersionURL);
+                                ModPack oldTimeModPack = JsonConvert.DeserializeObject<ModPack>(oldTimeJson);
+                                db.Query<ModPacks>("UPDATE ModPacks SET Version = '" + oldTimeModPack.Version + "', Downloaded = 1 WHERE Name = 'Old Times'");
 
-            //    //Check if Standard checkbox is checked
-            //    if (CK_Standard.IsChecked.Value)
-            //    {
-            //        try
-            //        {
-            //            await Task.Run(() => Downloader(packsLinks[2], downloadFolder + @"\Standard.html"));
+                                Led_OldTimes.Fill = Brushes.Green;
+                                Led_OldTimes.Visibility = Visibility.Visible;
+                                break;
 
-            //            string thisUri = installationFolder + @"\Standard.json";
-            //            if (!File.Exists(thisUri))
-            //            {
-            //                await Task.Run(() => Downloader(jsonLinks[2], thisUri));
-            //            }
+                            case 4:
+                                ModPacks[] modPacks_Future = db.Query<ModPacks>("SELECT * FROM ModPacks WHERE Name = 'Future'").ToArray();
+                                await Task.Run(() => Downloader(modPacks_Future[0].DownloadURL, downloadFolderPath[0].PathURI + @"\Future.html"));
 
-            //            string jsonController = Reader(thisUri);
-            //            ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-            //            Packs packsController = packVersionController();
+                                string futureJson = webClient.DownloadString(modPacks_Future[0].VersionURL);
+                                ModPack futureModPack = JsonConvert.DeserializeObject<ModPack>(futureJson);
+                                db.Query<ModPacks>("UPDATE ModPacks SET Version = '" + futureModPack.Version + "', Downloaded = 1 WHERE Name = 'Future'");
 
-            //            packsController.Standard = Pack.Version;
+                                Led_Future.Fill = Brushes.Green;
+                                Led_Future.Visibility = Visibility.Visible;
+                                break;
 
-            //            string packsJson = JsonConvert.SerializeObject(packsController);
+                            default:
+                                break;
+                        }
+                    }
+                }
 
-            //            using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
-            //            {
-            //                byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
-            //                packsJsonFile.Write(content, 0, content.Length);
-            //                packsJsonFile.Close();
-            //            }
+                //Check if something was selected then execute the post download guide
+                if(isSomethingSelected)
+                {
+                    //Open the download folder and instructions
+                    Process.Start(downloadFolderPath[0].PathURI);
 
-            //            Led_Standard.Fill = Brushes.Green;
-            //            Led_Standard.Visibility = Visibility.Visible;
-            //        }
-            //        catch (Exception error)
-            //        {
-            //            MessageBox.Show(error.Message);
-            //        }
-            //    }
-
-            //    //Check if Old Times checkbox is checked
-            //    if (CK_OldTimes.IsChecked.Value)
-            //    {
-            //        try
-            //        {
-            //            await Task.Run(() => Downloader(packsLinks[3], downloadFolder + @"\OldTimes.html"));
-
-            //            string thisUri = installationFolder + @"\OldTimes.json";
-            //            if (!File.Exists(thisUri))
-            //            {
-            //                await Task.Run(() => Downloader(jsonLinks[3], thisUri));
-            //            }
-
-            //            string jsonController = Reader(thisUri);
-            //            ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-            //            Packs packsController = packVersionController();
-
-            //            packsController.OldTimes = Pack.Version;
-
-            //            string packsJson = JsonConvert.SerializeObject(packsController);
-
-            //            using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
-            //            {
-            //                byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
-            //                packsJsonFile.Write(content, 0, content.Length);
-            //                packsJsonFile.Close();
-            //            }
-
-            //            Led_OldTimes.Fill = Brushes.Green;
-            //            Led_OldTimes.Visibility = Visibility.Visible;
-            //        }
-            //        catch (Exception error)
-            //        {
-            //            MessageBox.Show(error.Message);
-            //        }
-            //    }
-
-            //    //Check if Future checkbox is checked
-            //    if (CK_Future.IsChecked.Value)
-            //    {
-            //        try
-            //        {
-            //            await Task.Run(() => Downloader(packsLinks[4], downloadFolder + @"\Future.html"));
-
-            //            string thisUri = installationFolder + @"\Future.json";
-            //            if (!File.Exists(thisUri))
-            //            {
-            //                await Task.Run(() => Downloader(jsonLinks[4], thisUri));
-            //            }
-
-            //            string jsonController = Reader(thisUri);
-            //            ModPack Pack = JsonConvert.DeserializeObject<ModPack>(jsonController);
-            //            Packs packsController = packVersionController();
-
-            //            packsController.Future = Pack.Version;
-
-            //            string packsJson = JsonConvert.SerializeObject(packsController);
-
-            //            using (FileStream packsJsonFile = File.Create(installationFolder + @"\versions.json"))
-            //            {
-            //                byte[] content = new UTF8Encoding(true).GetBytes(packsJson);
-            //                packsJsonFile.Write(content, 0, content.Length);
-            //                packsJsonFile.Close();
-            //            }
-
-            //            Led_Future.Fill = Brushes.Green;
-            //            Led_Future.Visibility = Visibility.Visible;
-            //        }
-            //        catch (Exception error)
-            //        {
-            //            MessageBox.Show(error.Message);
-            //        }
-            //    }
-
-            //    //Open the download folder and instructions
-            //    Process.Start(downloadFolder);
-            //    instructions = new Instructions();
-            //    await Task.Run(() => instructions.Show());
-            //}
-            //catch (Exception error)
-            //{
-            //    //Send Crash report via CrashReportDotNet API
-            //    App.SendReport(error, "Download failed" + error.Message);
-            //}
+                    instructions = new Instructions();
+                    instructions.Show();
+                }
+                
+                //Dispose all the complex objects
+                db.Dispose();
+                webClient.Dispose();
+            }
+            catch (Exception error)
+            {
+                //Send Crash report via CrashReportDotNet API
+                App.SendReport(error, "Download failed" + error.Message);
+            }
         }
 
         private void Btn_Tutorial_Click(object sender, RoutedEventArgs e)
@@ -427,6 +345,33 @@ namespace TRO14_Downloader
                 App.SendReport(error, "failed to disable Vulkan API" + error.Message);
             }
         }
+
+        #region CheckBoxes Click events
+        private void CK_Demo_Click(object sender, RoutedEventArgs e)
+        {
+            modPacksCheckBoxesState[0] = CK_Demo.IsChecked.Value;
+        }
+
+        private void CK_Lite_Click(object sender, RoutedEventArgs e)
+        {
+            modPacksCheckBoxesState[1] = CK_Lite.IsChecked.Value;
+        }
+
+        private void CK_Standard_Click(object sender, RoutedEventArgs e)
+        {
+            modPacksCheckBoxesState[2] = CK_Standard.IsChecked.Value;
+        }
+
+        private void CK_OldTimes_Click(object sender, RoutedEventArgs e)
+        {
+            modPacksCheckBoxesState[3] = CK_OldTimes.IsChecked.Value;
+        }
+
+        private void CK_Future_Click(object sender, RoutedEventArgs e)
+        {
+            modPacksCheckBoxesState[4] = CK_Future.IsChecked.Value;
+        }
+        #endregion
         #endregion
 
         //Re-callable Downloader
@@ -475,65 +420,109 @@ namespace TRO14_Downloader
                 }
 
                 dbManager.InizializeDB(jsonReadURL);
+
+                var db = new SQLiteConnection(dbURI);
+
+                Paths[] paths = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
+
+                if (paths.Length <= 0)
+                {
+                    Paths newPath = new Paths { Name = "ArmaDirectory" };
+
+                    //Open folder selection dialog to user
+                    System.Windows.Forms.FolderBrowserDialog folderDlg = new System.Windows.Forms.FolderBrowserDialog();
+                    folderDlg.ShowNewFolderButton = true; //Enables new folders creation
+                    folderDlg.Description = "Select the folder where Arma3.exe is contained"; //Sets a description for the folder dialog window
+
+                    //Show dialog to user
+                    System.Windows.Forms.DialogResult result = folderDlg.ShowDialog();
+
+                    //Check if a folder as been selected and assign it to a variable, else it chooses the default (desktop) folder
+                    if (result == System.Windows.Forms.DialogResult.OK)
+                    {
+                        newPath.PathURI = folderDlg.SelectedPath;
+                    }
+                    else
+                    {
+                        //Set the ArmA3 folder as the desktop folder
+                        newPath.PathURI = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    }
+
+                    db.Insert(newPath);
+                    folderDlg.Dispose();
+                }
+                
+                Paths[] downloadQuery = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'DownloadFolder'").ToArray();
+                if(downloadQuery.Length <= 0)
+                {
+                    Paths downloadPath = new Paths { Name = "DownloadFolder", PathURI = Path.Combine(installationFolder, "Download") };
+                    db.Insert(downloadPath);
+                }
+
+                db.Dispose();
             });
         }
 
         //Function to check packs presence/update
-        //Finish DB Conversion
         void OpeningChecker()
         {
-            //Create the database connection
-            var db = new SQLiteConnection(dbURI);
-
             this.Dispatcher.Invoke(() =>
             {
+                //Create the database connection
+                var db = new SQLiteConnection(dbURI);
+
                 //Create a query object with all modpacks informations
                 ModPacks[] modPacks = db.Query<ModPacks>("SELECT * FROM ModPacks").ToArray();
+
                 //Starts the web client
-                WebClient wc = new WebClient();
+                WebClient webClient = new WebClient();
 
                 //Iterate all modpacks and checks their versions
                 for (int i = 0; i < modPacks.Length; i++)
                 {
                     //Reads the version from the link saved inside the DB and deserialize it
-                    string versionJson = wc.DownloadString(modPacks[i].VersionURL);
+                    string versionJson = webClient.DownloadString(modPacks[i].VersionURL);
                     ModPack singleModPack = JsonConvert.DeserializeObject<ModPack>(versionJson);
 
-                    //For every single modpack checks the version and sets the UI state, then gives notification
-                    if (modPacks[i].Version < singleModPack.Version)
+                    //For every single modpack checks if it's installed and sets the UI
+                    if (modPacks[i].Downloaded > 0)
                     {
-                        switch (modPacks[i].Name)
+                        InstalledPacksCheck(i);
+
+                        //try parsing the text value because sqlite doesn't support floats...
+                        float.TryParse(modPacks[i].Version.ToString(), out float floatVersion);
+
+                        //Then checks if the modpack is up to date and show the alert
+                        if (floatVersion < singleModPack.Version)
                         {
-                            case "Demo":
-                                InstalledPacksCheck(0);
-                                Led_Demo.Fill = Brushes.Red;
-                                break;
+                            switch (modPacks[i].Name)
+                            {
+                                case "Demo":
+                                    Led_Demo.Fill = Brushes.Red;
+                                    break;
 
-                            case "Lite":
-                                InstalledPacksCheck(1);
-                                Led_Lite.Fill = Brushes.Red;
-                                break;
+                                case "Lite":
+                                    Led_Lite.Fill = Brushes.Red;
+                                    break;
 
-                            case "Standard":
-                                InstalledPacksCheck(2);
-                                Led_Standard.Fill = Brushes.Red;
-                                break;
+                                case "Standard":
+                                    Led_Standard.Fill = Brushes.Red;
+                                    break;
 
-                            case "Old Times":
-                                InstalledPacksCheck(3);
-                                Led_OldTimes.Fill = Brushes.Red;
-                                break;
+                                case "Old Times":
+                                    Led_OldTimes.Fill = Brushes.Red;
+                                    break;
 
-                            case "Future":
-                                InstalledPacksCheck(4);
-                                Led_Future.Fill = Brushes.Red;
-                                break;
+                                case "Future":
+                                    Led_Future.Fill = Brushes.Red;
+                                    break;
 
-                            default:
-                                break;
+                                default:
+                                    break;
+                            }
+
+                            MessageBox.Show(modPacks[i].Name + " update found!");
                         }
-
-                        MessageBox.Show(modPacks[i].Name + " update found!");
                     }
                 }
 
@@ -567,6 +556,9 @@ namespace TRO14_Downloader
                         CK_Vulkan.IsEnabled = false;
                     }
                 }
+
+                db.Dispose();
+                webClient.Dispose();
             });
         }
 
