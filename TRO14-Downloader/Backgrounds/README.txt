@@ -1,0 +1,1 @@
+﻿The software only reads for .jpg files inside this folder, every other file format will be ignored

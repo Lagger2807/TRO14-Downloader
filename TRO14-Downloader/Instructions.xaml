@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TRO14_Downloader"
-        mc:Ignorable="d" Height="210" Width="370" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="Images/Logo .png" ShowInTaskbar="False" Topmost="True" Title="Instructions">
+        mc:Ignorable="d" Height="210" Width="370" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="Images/Logo.png" ShowInTaskbar="False" Topmost="True" Title="Instructions">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="0.1*"/>

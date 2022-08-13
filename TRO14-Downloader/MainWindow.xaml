@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TRO14_Downloader"
         mc:Ignorable="d"
-        Title="TROP Downloader" Height="450" Width="800" ResizeMode="CanMinimize" Icon="Images/Logo .png" WindowStartupLocation="CenterScreen" Visibility="Visible" Loaded="Window_Loaded">
+        Title="TROP Downloader" Height="450" Width="800" ResizeMode="CanMinimize" Icon="Images/Logo.png" WindowStartupLocation="CenterScreen" Visibility="Visible" Loaded="Window_Loaded">
     <Window.Background>
-        <ImageBrush Stretch="UniformToFill" ImageSource="Images/BackGround.png" TileMode="Tile"/>
+        <ImageBrush x:Name="BackGroundXAMLImage" ImageSource="Images/BackGround1.jpg" TileMode="Tile" Stretch="UniformToFill"/>
     </Window.Background>
     <Grid>
         <TabControl Background="#66FFFFFF">
@@ -66,7 +66,7 @@
                     <!--Utility-->
                     <Button Content="Show post-download guide" Grid.Column="4" Grid.ColumnSpan="1" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="11" Click="Btn_Tutorial_Click" Cursor="Hand"/>
                     <Button Content="Show installed versions" Grid.Column="4" Grid.ColumnSpan="1" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" FontSize="11" Cursor="Hand" Click="Btn_Visualizza_Click"/>
-                    
+
                     <!--Download-->
                     <Button Content="Download/Update selected packs" Grid.Column="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" Grid.Row="7" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="15" Cursor="Hand" IsDefault="False" Click="Btn_Download_Click"/>
 
@@ -107,8 +107,8 @@
                     <TextBlock Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" Grid.Row="2" Grid.RowSpan="5" TextWrapping="Wrap" Text="Please note that these are advanced settings and therefore not intended for normal use and/or users." VerticalAlignment="Center" FontSize="22" Foreground="#FFDE0000"/>
 
                     <!--Vulkan-->
-                    <Button Content="Download Vulkan API patch" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="13" Click="Btn_Vulkan_Click" Cursor="Hand" ToolTip="Vulkan APIs could improve performance (on some systems) &#10; by forcing better multithreading and enabling shaders pre-caching "/>
-                    <CheckBox Name="CK_Vulkan" Content="Enable Vulkan API" Grid.Column="5" HorizontalAlignment="Right" Grid.Row="2" VerticalAlignment="Center" Visibility="Hidden" Checked="CK_Vulkan_CheckedEvent" Unchecked="CK_Vulkan_UncheckedEvent" Cursor="Hand"/>
+                    <Button Content="Download Vulkan API patch" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="13" Click="Btn_Vulkan_Click" Cursor="Hand" ToolTip="Vulkan APIs could improve performance (on some systems) &#10;by forcing better multithreading and enabling shaders pre-caching."/>
+                    <CheckBox Name="CK_Vulkan" Content="Enable Vulkan API" Grid.Column="5" HorizontalAlignment="Right" Grid.Row="2" VerticalAlignment="Center" Visibility="Hidden" Cursor="Hand" Click="CK_Vulkan_Click"/>
 
                     <Ellipse Name="Led_Vulkan" Grid.Column="6" Fill="#99009600" HorizontalAlignment="Center" Height="22" Grid.Row="3" Stroke="#7F000000" VerticalAlignment="Center" Width="100" Visibility="Hidden"/>
                     <Label Name="Text_VulkanIsPresent" Content="Vulkan API present" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" FontSize="10" Visibility="Hidden"/>
