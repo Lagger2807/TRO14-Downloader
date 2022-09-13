@@ -5,8 +5,10 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -214,24 +216,8 @@ namespace TRO14_Downloader
                 var db = new SQLiteConnection(dbURI);
 
                 //Create the paths object with the download folder location
-                Paths[] downloadFolderQuery = db.Query<Paths>("SELECT * FROM Paths").ToArray();
-                string downloadFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string armaFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-                //Assign paths from db to variables
-                foreach(Paths item in downloadFolderQuery)
-                {
-                    switch (item.Name)
-                    {
-                        case "ArmaDirectory":
-                            armaFolderPath = item.PathURI;
-                            break;
-
-                        case "DownloadFolder":
-                            downloadFolderPath = item.PathURI;
-                            break;
-                    }
-                }
+                Paths[] armaPath = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
+                string armaDirectory = armaPath[0].PathURI;
 
                 //Create the vulkan files query
                 VulkanFiles[] vulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles").ToArray();
@@ -239,18 +225,22 @@ namespace TRO14_Downloader
                 //for each item in the query downloads in the arma folder and sets it to downloaded
                 foreach(VulkanFiles item in vulkanFiles)
                 {
-                    Downloader(item.DownloadURL, armaFolderPath + @"\" + item.Name);
+                    Downloader(item.DownloadURL, armaDirectory + @"\" + item.Name);
 
                     //Checks if the files exists in the arma folder, if true sets it to downloaded
-                    if (File.Exists(armaFolderPath + @"\" + item.Name))
+                    if (File.Exists(armaDirectory + @"\" + item.Name))
                         db.Query<VulkanFiles>("UPDATE VulkanFiles SET Downloaded = " + 1 + " WHERE Name = '" + item.Name + "'");
                 }
 
                 //Updates the UI
                 CK_Vulkan.Visibility = Visibility.Visible;
                 CK_Vulkan.IsChecked = true;
+                CK_Vulkan.IsEnabled = true;
                 Text_VulkanIsPresent.Visibility = Visibility.Visible;
+                Text_VulkanIsPresent.Content = "Vulkan API Present";
+                Text_VulkanIsPresent.FontWeight = FontWeights.Normal;
                 Led_Vulkan.Visibility = Visibility.Visible;
+                Led_Vulkan.Fill = Brushes.ForestGreen;
 
                 //Disposes the db connection
                 db.Dispose();
@@ -272,55 +262,52 @@ namespace TRO14_Downloader
             this.Close();
         }
 
-        private async void CK_Vulkan_Click(object sender, RoutedEventArgs e)
+        private void Btn_Info_Click(object sender, RoutedEventArgs e)
+        {
+            //change generic github link with wiki link
+            Process.Start("www.github.com"); //Process.Start seems to be able to open web pages too... cool...
+        }
+
+        private void Btn_DLL_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                //Create the db connection
+                //Starts SQL connections
                 var db = new SQLiteConnection(dbURI);
-                
-                //Gets the arma directory path
-                Paths[] armaPath = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
+
+                //Create the paths object with the download folder location
+                Paths[] armaPath = db.Query<Paths>("SELECT * FROM Paths").ToArray();
                 string armaDirectory = armaPath[0].PathURI;
 
-                //Creates the vulkaFiles object from query
-                VulkanFiles[] vulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles").ToArray();
+                //Create the allocators query
+                AllocDLLs[] allocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs").ToArray();
 
-                bool vulkanState = false;
-
-                foreach(VulkanFiles item in vulkanFiles)
+                //for each item in the query downloads in the arma folder and sets it to downloaded
+                foreach (AllocDLLs item in allocators)
                 {
-                    //Checks if files are active AND the checkbox is NOT Checked then deactives them (else it activates them)
-                    //why? bc the checkbox state change on click and this execute after it so we need to check it with reverse psychology
-                    if (item.Active > 0 && CK_Vulkan.IsChecked == false)
-                    {
-                        await Task.Run(() => File.Move(armaDirectory + @"\" + item.Name, armaDirectory + @"\" + item.Name + "OFF"));
-                        db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 0 WHERE Name = '" + item.Name + "'");
+                    Downloader(item.DownloadURL, armaDirectory + @"\Dll\" + item.Name);
 
-                        vulkanState = false;
-                    }    
-                    else if(item.Active <= 0 && CK_Vulkan.IsChecked == true)
-                    {
-                        await Task.Run(() => File.Move(armaDirectory + @"\" + item.Name + "OFF", armaDirectory + @"\" + item.Name));
-                        db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 1 WHERE Name = '" + item.Name + "'");
-
-                        vulkanState = true;
-                    }
+                    //Checks if the files exists in the arma folder, if true sets it to downloaded
+                    if (File.Exists(armaDirectory + @"\Dll\" + item.Name))
+                        db.Query<VulkanFiles>("UPDATE AllocDLLs SET Downloaded = " + 1 + " WHERE Name = '" + item.Name + "'");
                 }
 
-                db.Dispose();
+                //Updates the UI
+                Btn_Allocs.IsEnabled = false;
 
-                //Shows a message based on the new Vulkan state
-                if(vulkanState)
-                    MessageBox.Show("Disable the Battleye™ service in the ArmA III launcher to start the game.", "Vulkan enabled");
-                else if(!vulkanState)
-                    MessageBox.Show("You can enable the Battleye™ service in the ArmA III launcher.", "Vulkan disabled");
+                //Disposes the db connection
+                db.Dispose();
             }
             catch(Exception error)
             {
                 //Send Crash report via CrashReportDotNet API
-                App.SendReport(error, "failed to change Vulkan API state" + error.Message);
+                App.SendReport(error, "Custom allocators download failed" + error.Message);
             }
+        }
+
+        private void Btn_Profile_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
         #region CheckBoxes Click events
@@ -347,6 +334,57 @@ namespace TRO14_Downloader
         private void CK_Future_Click(object sender, RoutedEventArgs e)
         {
             modPacksCheckBoxesState[4] = CK_Future.IsChecked.Value;
+        }
+
+        private async void CK_Vulkan_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                //Create the db connection
+                var db = new SQLiteConnection(dbURI);
+
+                //Gets the arma directory path
+                Paths[] armaPath = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
+                string armaDirectory = armaPath[0].PathURI;
+
+                //Creates the vulkaFiles object from query
+                VulkanFiles[] vulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles").ToArray();
+
+                bool vulkanState = false;
+
+                foreach (VulkanFiles item in vulkanFiles)
+                {
+                    //Checks if files are active AND the checkbox is NOT Checked then deactives them (else it activates them)
+                    //why? bc the checkbox state change on click and this execute after it so we need to check it with reverse psychology
+                    if (item.Active > 0 && CK_Vulkan.IsChecked == false)
+                    {
+                        await Task.Run(() => File.Move(armaDirectory + @"\" + item.Name, armaDirectory + @"\" + item.Name + "OFF"));
+                        db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 0 WHERE Name = '" + item.Name + "'");
+
+                        vulkanState = false;
+                    }
+                    else if (item.Active <= 0 && CK_Vulkan.IsChecked == true)
+                    {
+                        await Task.Run(() => File.Move(armaDirectory + @"\" + item.Name + "OFF", armaDirectory + @"\" + item.Name));
+                        db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 1 WHERE Name = '" + item.Name + "'");
+
+                        vulkanState = true;
+                    }
+                }
+
+                db.Dispose();
+
+                //Shows a message based on the new Vulkan state
+                if (vulkanState)
+                    MessageBox.Show("Disable the Battleye™ service in the ArmA III launcher to start the game.", "Vulkan enabled");
+                else if (!vulkanState)
+                    MessageBox.Show("You can enable the Battleye™ service in the ArmA III launcher.", "Vulkan disabled");
+            }
+            catch (Exception error)
+            {
+                //Send Crash report via CrashReportDotNet API
+                App.SendReport(error, "failed to change Vulkan API state" + error.Message);
+            }
         }
         #endregion
         #endregion
@@ -443,6 +481,15 @@ namespace TRO14_Downloader
                 //Create the database connection
                 var db = new SQLiteConnection(dbURI);
 
+                //Read the ArmA3 directory
+                Paths[] paths = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
+                string arma3Folder = paths[0].PathURI;
+
+                if (!File.Exists(arma3Folder + @"\arma3launcher.exe"))
+                    Btn_Start.IsEnabled = false;
+
+                #region ModPacks
+
                 //Create a query object with all modpacks informations
                 ModPacks[] modPacks = db.Query<ModPacks>("SELECT * FROM ModPacks").ToArray();
 
@@ -498,20 +545,34 @@ namespace TRO14_Downloader
                     }
                 }
 
+                #endregion
+
+                #region VulkanFiles
+
                 VulkanFiles[] vulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles").ToArray();
 
-                //Check if the VulkanAPIs are installed
-                if (vulkanFiles[0].Downloaded > 0 && vulkanFiles[1].Downloaded > 0)
-                {
-                    //Read the ArmA3 directory
-                    Paths[] paths = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
-                    string arma3Folder = paths[0].PathURI;
+                bool vulkanDownloaded = true;
 
-                    //Show the VulkanAPI checkbox, text and led
+                //Check if the VulkanAPI files are downloaded
+                foreach (VulkanFiles item in vulkanFiles)
+                {
+                    if (item.Downloaded <= 0)
+                    {
+                        vulkanDownloaded = false;
+                    }
+                }
+
+                //Check if the VulkanAPIs are installed
+                if (vulkanDownloaded)
+                {
+                    //Show the VulkanAPI checkbox, text and led while disabling the download button
                     CK_Vulkan.Visibility = Visibility.Visible;
                     Text_VulkanIsPresent.Visibility = Visibility.Visible;
                     Led_Vulkan.Visibility = Visibility.Visible;
 
+                    bool vulkanInstalled = true;
+
+                    //Mass check if the VulkanAPI files are correctly present in one of their states, if not, disables everything and make you re-download them
                     if (File.Exists(arma3Folder + @"\d3d11.dll") && File.Exists(arma3Folder + @"\dxgi.dll"))
                     {
                         CK_Vulkan.IsChecked = true;
@@ -525,11 +586,48 @@ namespace TRO14_Downloader
                     else
                     {
                         CK_Vulkan.IsEnabled = false;
-                        db.Query<VulkanFiles>("UPDATE VulkanFiles SET Downloaded = 0");
-                        
+                        db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 0");
+
+                        vulkanInstalled = false;
+
                         MessageBox.Show("Vulkan API damaged, UI enabler disabled");
                     }
+
+                    if(vulkanInstalled)
+                    {
+                        Btn_Vulkan.IsEnabled = false;
+                    }
+                    else if(!vulkanInstalled)
+                    {
+                        CK_Vulkan.IsEnabled = false;
+                        Text_VulkanIsPresent.Content = "Vulkan API damaged!";
+                        Text_VulkanIsPresent.FontWeight = FontWeights.Bold;
+                        Led_Vulkan.Fill = Brushes.Red;
+                    }
                 }
+
+                #endregion
+
+                #region DLLs
+
+                AllocDLLs[] allocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs").ToArray();
+
+                bool allocatorsPresent = true;
+
+                foreach(AllocDLLs item in allocators)
+                {
+                    if(item.Downloaded <= 0)
+                    {
+                        allocatorsPresent = false;
+                    }    
+                }
+
+                if(allocatorsPresent)
+                {
+                    Btn_Allocs.IsEnabled = false;
+                }
+
+                #endregion
 
                 //Disposes both db and web client objects
                 db.Dispose();
@@ -561,6 +659,7 @@ namespace TRO14_Downloader
                     break;
             }
         }
+
         #endregion
     }
 
