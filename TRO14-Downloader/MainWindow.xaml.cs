@@ -5,10 +5,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -31,6 +29,7 @@ namespace TRO14_Downloader
         //Cached objects
         DBManager dbManager = new DBManager();
         Instructions instructions;
+        Profile_Instructions profileInstructions;
 
         //Global constants
         public const string jsonReadURL = "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/DB%20Inizializer.json";
@@ -307,7 +306,46 @@ namespace TRO14_Downloader
 
         private void Btn_Profile_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                //Starts SQL connections
+                var db = new SQLiteConnection(dbURI);
 
+                //Create the paths object with the download folder location
+                Paths[] armaPath = db.Query<Paths>("SELECT * FROM Paths").ToArray();
+                string armaDirectory = armaPath[0].PathURI;
+
+                //Create profile files query
+                Profiles[] profileFiles = db.Query<Profiles>("SELECT * FROM Profiles").ToArray();
+
+                //Create the profile folder if not exists
+                if(!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Arma 3 - Other Profiles\DefaultProfile\"))
+                    Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Arma 3 - Other Profiles\DefaultProfile\");
+
+                //for each item in the query downloads in the "documents/Arma 3 - other profiles" and sets it to downloaded
+                foreach (Profiles item in profileFiles)
+                {
+                    Downloader(item.DownloadURL, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Arma 3 - Other Profiles\DefaultProfile\" + item.Name);
+
+                    //Checks if the files exists in the arma folder, if true sets it to downloaded
+                    if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Arma 3 - Other Profiles\DefaultProfile\" + item.Name))
+                        db.Query<Profiles>("UPDATE Profiles SET Downloaded = " + 1 + " WHERE Name = '" + item.Name + "'");
+                }
+
+                //Updates the UI
+                Btn_Profile.IsEnabled = false;
+
+                //Disposes the db connection
+                db.Dispose();
+
+                profileInstructions = new Profile_Instructions();
+                profileInstructions.Show();
+            }
+            catch(Exception error)
+            {
+                //Send Crash report via CrashReportDotNet API
+                App.SendReport(error, "Default profile download failed" + error.Message);
+            }
         }
 
         #region CheckBoxes Click events
@@ -617,15 +655,27 @@ namespace TRO14_Downloader
                 foreach(AllocDLLs item in allocators)
                 {
                     if(item.Downloaded <= 0)
-                    {
                         allocatorsPresent = false;
-                    }    
                 }
 
                 if(allocatorsPresent)
-                {
                     Btn_Allocs.IsEnabled = false;
+
+                #endregion
+
+                #region Profile files
+                Profiles[] profileFiles = db.Query<Profiles>("SELECT * FROM Profiles").ToArray();
+
+                bool profileFilesPresent = true;
+
+                foreach(Profiles item in profileFiles)
+                {
+                    if (item.Downloaded <= 0)
+                        profileFilesPresent = false;
                 }
+
+                if (profileFilesPresent)
+                    Btn_Profile.IsEnabled = false;
 
                 #endregion
 

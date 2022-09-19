@@ -1,0 +1,29 @@
+﻿<Window x:Class="TRO14_Downloader.Profile_Instructions"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TRO14_Downloader"
+        mc:Ignorable="d"
+        Title="Profile Instructions" Height="600" Width="700" Cursor="" ResizeMode="NoResize" Topmost="True" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Image HorizontalAlignment="Stretch" VerticalAlignment="Top" Source="/Images/Example_Image.png"/>
+        
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="80">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.01*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="0.01*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.1*"/>
+                <RowDefinition Height="0.6*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="0.1*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" TextWrapping="Wrap" Text="-Enable the profile option in parameters and select DefaultProfile" VerticalAlignment="Bottom" FontSize="16"/>
+            <Button Name="Btn_Close" Grid.Column="1" Content="Close" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Width="60" IsCancel="True" Cursor="Hand" Click="Btn_Close_Click"/>
+        </Grid>
+    </Grid>
+</Window>
