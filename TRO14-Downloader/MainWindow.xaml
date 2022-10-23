@@ -11,7 +11,7 @@
     </Window.Background>
     <Grid>
         <TabControl Background="#66FFFFFF">
-            <TabItem Header="Basic">
+            <TabItem Header="Basic" Width="60" Height="30" FontSize="18">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.02*"/>
@@ -20,7 +20,7 @@
                         <ColumnDefinition Width="0.45*"/>
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="0.8*"/>
                         <ColumnDefinition Width="0.1*"/>
                         <ColumnDefinition Width="0.02*"/>
                     </Grid.ColumnDefinitions>
@@ -62,23 +62,30 @@
                     <CheckBox Name="CK_Future" Grid.Column="2" HorizontalAlignment="Center" Grid.Row="6" VerticalAlignment="Center" Cursor="Hand" Click="CK_Future_Click"/>
                     <Label Name="Text_Future" Content="Future" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Center" FontWeight="Bold" FontSize="16"/>
                     <Ellipse Name="Led_Future" Grid.Column="3" Fill="#FF009600" HorizontalAlignment="Right" Height="10" Grid.Row="6" VerticalAlignment="Center" Width="10" Stroke="#7F000000" Visibility="Hidden"/>
-                    
+
                     <!--Select All-->
                     <!--<CheckBox Name="CK_All" Grid.Column="2" HorizontalAlignment="Center" Grid.Row="7" VerticalAlignment="Top" Cursor="Hand" Click="CK_All_Click" Margin="0,10,0,0"/>
                     <Label Name="Text_All" Content="Select All" Grid.Column="3" HorizontalAlignment="Left" Grid.Row="7" VerticalAlignment="Top" FontWeight="Bold" FontSize="16"/>-->
 
                     <!--Utility-->
-                    <Button Content="Show post-download guide" Grid.Column="4" Grid.ColumnSpan="1" HorizontalAlignment="Right" Grid.Row="2" VerticalAlignment="Center" FontSize="11" Click="Btn_Tutorial_Click" Cursor="Hand"/>
-                    <Button Content="Show installed versions" Grid.Column="4" Grid.ColumnSpan="1" HorizontalAlignment="Right" Grid.Row="3" VerticalAlignment="Center" FontSize="11" Cursor="Hand" Click="Btn_Visualizza_Click"/>
+                    <Button Content="Show post-download guide" Grid.Column="4" Grid.ColumnSpan="1" HorizontalAlignment="Right" Grid.Row="2" VerticalAlignment="Center" FontSize="14" Click="Btn_Tutorial_Click" Cursor="Hand"/>
+                    <Button Content="Show installed versions" Grid.Column="4" Grid.ColumnSpan="1" HorizontalAlignment="Right" Grid.Row="3" VerticalAlignment="Center" FontSize="14" Cursor="Hand" Click="Btn_Visualizza_Click"/>
+
+                    <CheckBox Name="CK_Vulkan" Grid.Column="6" HorizontalAlignment="left" Grid.Row="2" VerticalAlignment="Center" Cursor="Hand" Click="CK_Vulkan_Click" Visibility="Hidden"/>
+                    <TextBlock Name="Text_Vulkan" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="2" TextWrapping="Wrap" Text="Enable Vulkan API" VerticalAlignment="Center" Visibility="Hidden"/>
+                    <Rectangle Name="Led_Vulkan" Grid.Column="6" Grid.Row="3" Fill="ForestGreen" Stroke="Black" StrokeThickness="0" RadiusX="5" RadiusY="5" Width="120" Height="25" Opacity="0.6" Visibility="Hidden"/>
+                    <Label Name="Text_VulkanIsPresent" Content="Vulkan API present" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" FontSize="10" Visibility="Hidden"/>
 
                     <!--Download-->
                     <Button Content="Download/Update selected packs" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Left" Grid.Row="7" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Cursor="Hand" IsDefault="False" Click="Btn_Download_Click"/>
 
                     <!--Start-->
                     <Button Name="Btn_Start" Content="Start ArmA III Launcher" Grid.Column="5" Grid.ColumnSpan="2" Grid.Row="7" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="36" Height="65" Cursor="Hand" IsDefault="True" Click="Btn_Start_Click"/>
+
+                    <Image Width="10" Height="10" Source="/Images/Pepe.png" Grid.Column="4" Grid.Row="8" MouseDown="Img_Pepe_Click" Grid.RowSpan="2" OpacityMask="#7F000000"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="Advanced">
+            <TabItem Header="Advanced" Width="100" Height="30" FontSize="18">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.02*"/>
@@ -94,12 +101,12 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="0.02*"/>
                         <RowDefinition Height="0.05*"/>
-                        <RowDefinition Height="0.15*"/>
-                        <RowDefinition Height="0.15*"/>
-                        <RowDefinition Height="0.15*"/>
-                        <RowDefinition Height="0.15*"/>
-                        <RowDefinition Height="0.15*"/>
-                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="0.20*"/>
+                        <RowDefinition Height="0.10*"/>
+                        <RowDefinition Height="0.30*"/>
+                        <RowDefinition Height="0.10*"/>
+                        <RowDefinition Height="0.30*"/>
+                        <RowDefinition Height="0.8*"/>
                         <RowDefinition Height="0.05*"/>
                         <RowDefinition Height="0.02*"/>
                     </Grid.RowDefinitions>
@@ -108,24 +115,23 @@
                     <Rectangle Grid.Column="2" Grid.ColumnSpan="3" Fill="#99F4F4F5" HorizontalAlignment="Stretch" Grid.Row="2" Grid.RowSpan="5" Stroke="Black" VerticalAlignment="Stretch" StrokeThickness="0" RadiusX="15" RadiusY="15"/>
 
                     <!--Disclaimer-->
-                    <TextBlock Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" Grid.Row="2" Grid.RowSpan="5" TextWrapping="Wrap" Text="Please note that these are advanced settings and therefore not intended for normal use and/or users." VerticalAlignment="Center" FontSize="22" Foreground="#FFDE0000"/>
-                    
-                    <!--Info-->
-                    <Button Name="Btn_Info" Content="?" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Left" Grid.Row="7" VerticalAlignment="Bottom" Height="20" Width="20" ToolTip="Read the documentation about advanced settings (WIP)" Click="Btn_Info_Click" Cursor="Hand" IsCancel="True"/>
-                    
+                    <TextBlock Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" Grid.Row="2" Grid.RowSpan="5" TextWrapping="Wrap" Text="Please note that these are advanced settings and therefore not intended for normal use and/or users." VerticalAlignment="Center" FontSize="28" Foreground="#FFDE0000"/>
+
                     <!--Vulkan-->
                     <Button Name="Btn_Vulkan" Content="Download Vulkan API patch" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="16" Click="Btn_Vulkan_Click" Cursor="Hand" ToolTip="Vulkan APIs may improve performance (on some systems)- &#10;-by forcing better multithreading and enabling shaders pre-caching."/>
-                    <CheckBox Name="CK_Vulkan" Content="Enable Vulkan API" Grid.Column="5" HorizontalAlignment="Right" Grid.Row="2" VerticalAlignment="Center" Cursor="Hand" Click="CK_Vulkan_Click" Visibility="Hidden"/>
-
-                    <Rectangle Name="Led_Vulkan" Grid.Column="6" Grid.Row="3" Fill="ForestGreen" Stroke="Black" StrokeThickness="0" RadiusX="5" RadiusY="5" Width="120" Height="25" Opacity="0.6" Visibility="Hidden"/>
                     <Ellipse Name="Led_Vulkan_Old" Grid.Column="6" Fill="#99009600" HorizontalAlignment="Center" Height="27" Grid.Row="3" Stroke="#7F000000" VerticalAlignment="Center" Width="100" StrokeThickness="0" Visibility="Hidden"/>
-                    <Label Name="Text_VulkanIsPresent" Content="Vulkan API present" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" FontSize="10" Visibility="Hidden"/>
+
+                    <!--Player Profile-->
+                    <Button Name="Btn_Profile" Content="Download and install &#10;example profile" Grid.Column="6" HorizontalAlignment="Right" Grid.Row="4" VerticalAlignment="Center" Height="50" ToolTip="Install a basic Arma 3 profile with preset controls." FontSize="16" Cursor="Hand" Click="Btn_Profile_Click"/>
 
                     <!--DLLs-->
-                    <Button Name="Btn_Allocs" Content="Download and install &#10;custom memory allocators" Grid.Column="5" HorizontalAlignment="Right" Grid.Row="7" VerticalAlignment="Top" Height="50" ToolTip="Different memory allocators may improve performance (on some systems)- &#10;-by enhancing memory allocation on RAM &#10;--click on the ? icon for more information." FontSize="16" Cursor="Hand" Click="Btn_DLL_Click"/>
-                    
-                    <!--Player Profile-->
-                    <Button Name="Btn_Profile" Content="Download and install &#10;example profile" Grid.Column="6" HorizontalAlignment="Right" Grid.Row="7" VerticalAlignment="Top" Height="50" ToolTip="Install a basic Arma 3 profile with preset controls." FontSize="16" Cursor="Hand" Click="Btn_Profile_Click"/>
+                    <Button Name="Btn_Allocs" Content="Download and install &#10;custom memory allocators" Grid.Column="6" HorizontalAlignment="Right" Grid.Row="6" VerticalAlignment="Center" Height="50" ToolTip="Different memory allocators may improve performance (on some systems)- &#10;-by enhancing memory allocation on RAM &#10;--click on the ? icon for more information." FontSize="16" Cursor="Hand" Click="Btn_DLL_Click"/>
+
+                    <!--Change Directory-->
+                    <Button Name="Btn_ChangeDir" Content="Change Arma 3 Directory" Grid.Column="4" Grid.Row="7" Height="40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Click="Btn_ChangeDir_Click" Cursor="Hand"/>
+
+                    <!--Info-->
+                    <Button Name="Btn_Info" Content="?" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Left" Grid.Row="7" VerticalAlignment="Bottom" Height="25" Width="25" ToolTip="Read the documentation about advanced settings (WIP)" Click="Btn_Info_Click" Cursor="Hand" IsCancel="True" FontSize="18"/>
                 </Grid>
             </TabItem>
         </TabControl>

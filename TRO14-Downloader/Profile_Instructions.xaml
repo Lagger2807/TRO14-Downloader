@@ -7,9 +7,15 @@
         mc:Ignorable="d"
         Title="Profile Instructions" Height="600" Width="700" Cursor="" ResizeMode="NoResize" Topmost="True" WindowStartupLocation="CenterScreen">
     <Grid>
-        <Image HorizontalAlignment="Stretch" VerticalAlignment="Top" Source="/Images/Example_Image.png"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.01*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="0.01*"/>
+        </Grid.ColumnDefinitions>
         
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="80">
+        <Image HorizontalAlignment="Left" VerticalAlignment="Top" Source="/Images/Example_Image.png" Grid.Column="1"/>
+
+        <Grid VerticalAlignment="Bottom" Height="80" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="0.01*"/>
                 <ColumnDefinition Width="1*"/>
@@ -23,7 +29,7 @@
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" TextWrapping="Wrap" Text="-Enable the profile option in parameters and select DefaultProfile" VerticalAlignment="Bottom" FontSize="16"/>
-            <Button Name="Btn_Close" Grid.Column="1" Content="Close" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Width="60" IsCancel="True" Cursor="Hand" Click="Btn_Close_Click"/>
+            <Button Name="Btn_Close" Grid.Column="1" Content="Close" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" Width="60" IsCancel="True" Cursor="Hand" Click="Btn_Close_Click"/>
         </Grid>
     </Grid>
 </Window>

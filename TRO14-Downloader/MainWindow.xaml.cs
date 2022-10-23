@@ -235,6 +235,7 @@ namespace TRO14_Downloader
                 CK_Vulkan.Visibility = Visibility.Visible;
                 CK_Vulkan.IsChecked = true;
                 CK_Vulkan.IsEnabled = true;
+                Text_Vulkan.Visibility = Visibility.Visible;
                 Text_VulkanIsPresent.Visibility = Visibility.Visible;
                 Text_VulkanIsPresent.Content = "Vulkan API Present";
                 Text_VulkanIsPresent.FontWeight = FontWeights.Normal;
@@ -346,6 +347,35 @@ namespace TRO14_Downloader
                 //Send Crash report via CrashReportDotNet API
                 App.SendReport(error, "Default profile download failed" + error.Message);
             }
+        }
+
+        private void Btn_ChangeDir_Click(object sender, RoutedEventArgs e)
+        {
+            var db = new SQLiteConnection(dbURI);
+
+            Paths newPath = new Paths { Name = "ArmaDirectory" };
+
+            //Open folder selection dialog to user
+            System.Windows.Forms.FolderBrowserDialog folderDlg = new System.Windows.Forms.FolderBrowserDialog();
+            folderDlg.ShowNewFolderButton = true; //Enables new folders creation
+            folderDlg.Description = "Select the folder where Arma3.exe is contained"; //Sets a description for the folder dialog window
+
+            //Show dialog to user
+            System.Windows.Forms.DialogResult result = folderDlg.ShowDialog();
+
+            //Check if a folder as been selected and assign it to a variable, else it chooses the default (desktop) folder
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                //Assign the new URI to the path object
+                newPath.PathURI = folderDlg.SelectedPath;
+
+                //Update the db element with the updated one
+                db.Query<Paths>("UPDATE Paths SET PathURI = '" + newPath.PathURI + "' Name = '" + newPath.Name + "'");
+            }
+
+            //Dispose the folder dialog and db object
+            folderDlg.Dispose();
+            db.Dispose();
         }
 
         #region CheckBoxes Click events
@@ -605,6 +635,7 @@ namespace TRO14_Downloader
                 {
                     //Show the VulkanAPI checkbox, text and led while disabling the download button
                     CK_Vulkan.Visibility = Visibility.Visible;
+                    Text_Vulkan.Visibility = Visibility.Visible;
                     Text_VulkanIsPresent.Visibility = Visibility.Visible;
                     Led_Vulkan.Visibility = Visibility.Visible;
 
@@ -711,6 +742,12 @@ namespace TRO14_Downloader
         }
 
         #endregion
+
+        //Easter Egg (don't tell anyone)
+        private void Img_Pepe_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            Process.Start("https://youtu.be/dQw4w9WgXcQ");
+        }
     }
 
     public class ModPack
