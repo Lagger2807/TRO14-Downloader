@@ -111,11 +111,11 @@
                         <RowDefinition Height="0.02*"/>
                     </Grid.RowDefinitions>
 
-                    <Rectangle Grid.Column="1" Grid.ColumnSpan="8" Fill="#7FF4F4F5" HorizontalAlignment="Stretch" Grid.Row="1" Grid.RowSpan="8" Stroke="Black" VerticalAlignment="Stretch" StrokeThickness="0" RadiusX="15" RadiusY="15"/>
+                    <Rectangle Grid.Column="1" Grid.ColumnSpan="7" Fill="#7FF4F4F5" HorizontalAlignment="Stretch" Grid.Row="1" Grid.RowSpan="8" Stroke="Black" VerticalAlignment="Stretch" StrokeThickness="0" RadiusX="15" RadiusY="15"/>
                     <Rectangle Grid.Column="2" Grid.ColumnSpan="3" Fill="#99F4F4F5" HorizontalAlignment="Stretch" Grid.Row="2" Grid.RowSpan="5" Stroke="Black" VerticalAlignment="Stretch" StrokeThickness="0" RadiusX="15" RadiusY="15"/>
 
                     <!--Disclaimer-->
-                    <TextBlock Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" Grid.Row="2" Grid.RowSpan="5" TextWrapping="Wrap" Text="Please note that these are advanced settings and therefore not intended for normal use and/or users." VerticalAlignment="Center" FontSize="28" Foreground="#FFDE0000"/>
+                    <TextBlock Grid.Column="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" Grid.Row="2" Grid.RowSpan="5" TextWrapping="Wrap" Text="Please note that these are advanced settings and therefore not intended for normal use and/or users." VerticalAlignment="Center" FontSize="28" Foreground="#FFDE0000"/>
 
                     <!--Vulkan-->
                     <Button Name="Btn_Vulkan" Content="Download Vulkan API patch" Grid.Column="6" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Center" FontSize="16" Click="Btn_Vulkan_Click" Cursor="Hand" ToolTip="Vulkan APIs may improve performance (on some systems)- &#10;-by forcing better multithreading and enabling shaders pre-caching."/>

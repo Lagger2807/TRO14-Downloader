@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using SQLite;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -42,18 +43,16 @@ namespace TRO14_Downloader
         }
 
         #region Events
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
                 //Random background extractor
                 RandomStartupBackground();
 
-                //Threaded first-start control of files and roots
-                await Task.Run(() => FirstStartControl());
+                FirstStartControl();
 
-                //Threaded on opening control of download versions and updates
-                await Task.Run(() => OpeningChecker());
+                OpeningChecker();
             }
             catch (Exception error)
             {
@@ -489,231 +488,235 @@ namespace TRO14_Downloader
 
         //Function with all first start procedures (check presence and create basic files/roots)
         void FirstStartControl()
-        {
-            this.Dispatcher.Invoke(() =>
+        {   
+            if (!Directory.Exists(installationFolder + @"\Download"))
             {
-                if (!Directory.Exists(installationFolder + @"\Download"))
+                Directory.CreateDirectory(installationFolder + @"\Download");
+            }
+
+            dbManager.InizializeDB(jsonReadURL);
+
+            var db = new SQLiteConnection(dbURI);
+
+            List<Paths> paths = db.Query<Paths>("SELECT * FROM Paths");
+
+            bool armaDirExists = paths.Exists(
+                delegate(Paths P) 
                 {
-                    Directory.CreateDirectory(installationFolder + @"\Download");
+                    return P.Name == "ArmaDirectory"; 
+                });
+            bool downloadFolderExists = paths.Exists(
+                delegate (Paths P) 
+                {
+                    return P.Name == "DownloadFolder"; 
+                }
+                );
+
+            if(!armaDirExists)
+            {
+                Paths newPath = new Paths { Name = "ArmaDirectory" };
+
+                //Open folder selection dialog to user
+                System.Windows.Forms.FolderBrowserDialog folderDlg = new System.Windows.Forms.FolderBrowserDialog();
+                folderDlg.ShowNewFolderButton = true; //Enables new folders creation
+                folderDlg.Description = "Select the folder where Arma3.exe is contained"; //Sets a description for the folder dialog window
+
+                //Show dialog to user
+                System.Windows.Forms.DialogResult result = folderDlg.ShowDialog();
+
+                //Check if a folder as been selected and assign it to a variable, else it chooses the default (desktop) folder
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    newPath.PathURI = folderDlg.SelectedPath;
+                }
+                else
+                {
+                    //Set the ArmA3 folder as the desktop folder
+                    newPath.PathURI = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 }
 
-                dbManager.InizializeDB(jsonReadURL);
+                db.Insert(newPath);
+            }
 
-                var db = new SQLiteConnection(dbURI);
+            if(!downloadFolderExists)
+            {
+                Paths downloadPath = new Paths { Name = "DownloadFolder", PathURI = Path.Combine(installationFolder, "Download") };
+                db.Insert(downloadPath);
+            }
 
-                Paths[] paths = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
-
-                if (paths.Length <= 0)
-                {
-                    Paths newPath = new Paths { Name = "ArmaDirectory" };
-
-                    //Open folder selection dialog to user
-                    System.Windows.Forms.FolderBrowserDialog folderDlg = new System.Windows.Forms.FolderBrowserDialog();
-                    folderDlg.ShowNewFolderButton = true; //Enables new folders creation
-                    folderDlg.Description = "Select the folder where Arma3.exe is contained"; //Sets a description for the folder dialog window
-
-                    //Show dialog to user
-                    System.Windows.Forms.DialogResult result = folderDlg.ShowDialog();
-
-                    //Check if a folder as been selected and assign it to a variable, else it chooses the default (desktop) folder
-                    if (result == System.Windows.Forms.DialogResult.OK)
-                    {
-                        newPath.PathURI = folderDlg.SelectedPath;
-                    }
-                    else
-                    {
-                        //Set the ArmA3 folder as the desktop folder
-                        newPath.PathURI = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                    }
-
-                    db.Insert(newPath);
-                    folderDlg.Dispose();
-                }
-                
-                Paths[] downloadQuery = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'DownloadFolder'").ToArray();
-                if(downloadQuery.Length <= 0)
-                {
-                    Paths downloadPath = new Paths { Name = "DownloadFolder", PathURI = Path.Combine(installationFolder, "Download") };
-                    db.Insert(downloadPath);
-                }
-
-                db.Dispose();
-            });
+            db.Close();
         }
 
         //Function to check packs presence/update
         void OpeningChecker()
         {
-            this.Dispatcher.Invoke(() =>
+            //Create the database connection
+            var db = new SQLiteConnection(dbURI);
+
+            //Read the ArmA3 directory
+            Paths[] paths = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
+            string arma3Folder = paths[0].PathURI;
+
+            if (!File.Exists(arma3Folder + @"\arma3launcher.exe"))
+                Btn_Start.IsEnabled = false;
+
+            #region ModPacks
+
+            //Create a query object with all modpacks informations
+            ModPacks[] modPacks = db.Query<ModPacks>("SELECT * FROM ModPacks").ToArray();
+
+            //Starts the web client
+            WebClient webClient = new WebClient();
+
+            //Iterate all modpacks and checks their versions
+            for (int i = 0; i < modPacks.Length; i++)
             {
-                //Create the database connection
-                var db = new SQLiteConnection(dbURI);
+                //Reads the version from the link saved inside the DB and deserialize it
+                string versionJson = webClient.DownloadString(modPacks[i].VersionURL);
+                ModPack singleModPack = JsonConvert.DeserializeObject<ModPack>(versionJson);
 
-                //Read the ArmA3 directory
-                Paths[] paths = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
-                string arma3Folder = paths[0].PathURI;
-
-                if (!File.Exists(arma3Folder + @"\arma3launcher.exe"))
-                    Btn_Start.IsEnabled = false;
-
-                #region ModPacks
-
-                //Create a query object with all modpacks informations
-                ModPacks[] modPacks = db.Query<ModPacks>("SELECT * FROM ModPacks").ToArray();
-
-                //Starts the web client
-                WebClient webClient = new WebClient();
-
-                //Iterate all modpacks and checks their versions
-                for (int i = 0; i < modPacks.Length; i++)
+                //For every single modpack checks if it's installed and sets the UI
+                if (modPacks[i].Downloaded > 0)
                 {
-                    //Reads the version from the link saved inside the DB and deserialize it
-                    string versionJson = webClient.DownloadString(modPacks[i].VersionURL);
-                    ModPack singleModPack = JsonConvert.DeserializeObject<ModPack>(versionJson);
+                    InstalledPacksCheck(i);
 
-                    //For every single modpack checks if it's installed and sets the UI
-                    if (modPacks[i].Downloaded > 0)
+                    //try parsing the text value because sqlite doesn't support floats...
+                    float.TryParse(modPacks[i].Version.ToString(), out float floatVersion);
+
+                    //Then checks if the modpack is up to date and show the alert
+                    if (floatVersion < singleModPack.Version)
                     {
-                        InstalledPacksCheck(i);
-
-                        //try parsing the text value because sqlite doesn't support floats...
-                        float.TryParse(modPacks[i].Version.ToString(), out float floatVersion);
-
-                        //Then checks if the modpack is up to date and show the alert
-                        if (floatVersion < singleModPack.Version)
+                        switch (modPacks[i].Name)
                         {
-                            switch (modPacks[i].Name)
-                            {
-                                case "Demo":
-                                    Led_Demo.Fill = Brushes.Red;
-                                    break;
+                            case "Demo":
+                                Led_Demo.Fill = Brushes.Red;
+                                break;
 
-                                case "Lite":
-                                    Led_Lite.Fill = Brushes.Red;
-                                    break;
+                            case "Lite":
+                                Led_Lite.Fill = Brushes.Red;
+                                break;
 
-                                case "Standard":
-                                    Led_Standard.Fill = Brushes.Red;
-                                    break;
+                            case "Standard":
+                                Led_Standard.Fill = Brushes.Red;
+                                break;
 
-                                case "Old Times":
-                                    Led_OldTimes.Fill = Brushes.Red;
-                                    break;
+                            case "Old Times":
+                                Led_OldTimes.Fill = Brushes.Red;
+                                break;
 
-                                case "Future":
-                                    Led_Future.Fill = Brushes.Red;
-                                    break;
+                            case "Future":
+                                Led_Future.Fill = Brushes.Red;
+                                break;
 
-                                default:
-                                    break;
-                            }
-
-                            MessageBox.Show(modPacks[i].Name + " update found!");
+                            default:
+                                break;
                         }
+
+                        MessageBox.Show(modPacks[i].Name + " update found!");
                     }
                 }
+            }
 
-                #endregion
+            #endregion
 
-                #region VulkanFiles
+            #region VulkanFiles
 
-                VulkanFiles[] vulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles").ToArray();
+            VulkanFiles[] vulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles").ToArray();
 
-                bool vulkanDownloaded = true;
+            bool vulkanDownloaded = true;
 
-                //Check if the VulkanAPI files are downloaded
-                foreach (VulkanFiles item in vulkanFiles)
+            //Check if the VulkanAPI files are downloaded
+            foreach (VulkanFiles item in vulkanFiles)
+            {
+                if (item.Downloaded <= 0)
                 {
-                    if (item.Downloaded <= 0)
-                    {
-                        vulkanDownloaded = false;
-                    }
+                    vulkanDownloaded = false;
                 }
+            }
 
-                //Check if the VulkanAPIs are installed
-                if (vulkanDownloaded)
+            //Check if the VulkanAPIs are installed
+            if (vulkanDownloaded)
+            {
+                //Show the VulkanAPI checkbox, text and led while disabling the download button
+                CK_Vulkan.Visibility = Visibility.Visible;
+                Text_Vulkan.Visibility = Visibility.Visible;
+                Text_VulkanIsPresent.Visibility = Visibility.Visible;
+                Led_Vulkan.Visibility = Visibility.Visible;
+
+                bool vulkanInstalled = true;
+
+                //Mass check if the VulkanAPI files are correctly present in one of their states, if not, disables everything and make you re-download them
+                if (File.Exists(arma3Folder + @"\d3d11.dll") && File.Exists(arma3Folder + @"\dxgi.dll"))
                 {
-                    //Show the VulkanAPI checkbox, text and led while disabling the download button
-                    CK_Vulkan.Visibility = Visibility.Visible;
-                    Text_Vulkan.Visibility = Visibility.Visible;
-                    Text_VulkanIsPresent.Visibility = Visibility.Visible;
-                    Led_Vulkan.Visibility = Visibility.Visible;
-
-                    bool vulkanInstalled = true;
-
-                    //Mass check if the VulkanAPI files are correctly present in one of their states, if not, disables everything and make you re-download them
-                    if (File.Exists(arma3Folder + @"\d3d11.dll") && File.Exists(arma3Folder + @"\dxgi.dll"))
-                    {
-                        CK_Vulkan.IsChecked = true;
-                        db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 1");
-                    }
-                    else if (File.Exists(arma3Folder + @"\d3d11.dllOFF") && File.Exists(arma3Folder + @"\dxgi.dllOFF"))
-                    {
-                        CK_Vulkan.IsChecked = false;
-                        db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 0");
-                    }
-                    else
-                    {
-                        CK_Vulkan.IsEnabled = false;
-                        db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 0");
-
-                        vulkanInstalled = false;
-
-                        MessageBox.Show("Vulkan API damaged, UI enabler disabled");
-                    }
-
-                    if(vulkanInstalled)
-                    {
-                        Btn_Vulkan.IsEnabled = false;
-                    }
-                    else if(!vulkanInstalled)
-                    {
-                        CK_Vulkan.IsEnabled = false;
-                        Text_VulkanIsPresent.Content = "Vulkan API damaged!";
-                        Text_VulkanIsPresent.FontWeight = FontWeights.Bold;
-                        Led_Vulkan.Fill = Brushes.Red;
-                    }
+                    CK_Vulkan.IsChecked = true;
+                    db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 1");
                 }
-
-                #endregion
-
-                #region DLLs
-
-                AllocDLLs[] allocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs").ToArray();
-
-                bool allocatorsPresent = true;
-
-                foreach(AllocDLLs item in allocators)
+                else if (File.Exists(arma3Folder + @"\d3d11.dllOFF") && File.Exists(arma3Folder + @"\dxgi.dllOFF"))
                 {
-                    if(item.Downloaded <= 0)
-                        allocatorsPresent = false;
+                    CK_Vulkan.IsChecked = false;
+                    db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 0");
                 }
-
-                if(allocatorsPresent)
-                    Btn_Allocs.IsEnabled = false;
-
-                #endregion
-
-                #region Profile files
-                Profiles[] profileFiles = db.Query<Profiles>("SELECT * FROM Profiles").ToArray();
-
-                bool profileFilesPresent = true;
-
-                foreach(Profiles item in profileFiles)
+                else
                 {
-                    if (item.Downloaded <= 0)
-                        profileFilesPresent = false;
+                    CK_Vulkan.IsEnabled = false;
+                    db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 0");
+
+                    vulkanInstalled = false;
+
+                    MessageBox.Show("Vulkan API damaged, UI enabler disabled");
                 }
 
-                if (profileFilesPresent)
-                    Btn_Profile.IsEnabled = false;
+                if(vulkanInstalled)
+                {
+                    Btn_Vulkan.IsEnabled = false;
+                }
+                else if(!vulkanInstalled)
+                {
+                    CK_Vulkan.IsEnabled = false;
+                    Text_VulkanIsPresent.Content = "Vulkan API damaged!";
+                    Text_VulkanIsPresent.FontWeight = FontWeights.Bold;
+                    Led_Vulkan.Fill = Brushes.Red;
+                }
+            }
 
-                #endregion
+            #endregion
 
-                //Disposes both db and web client objects
-                db.Dispose();
-                webClient.Dispose();
-            });
+            #region DLLs
+
+            AllocDLLs[] allocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs").ToArray();
+
+            bool allocatorsPresent = true;
+
+            foreach(AllocDLLs item in allocators)
+            {
+                if(item.Downloaded <= 0)
+                    allocatorsPresent = false;
+            }
+
+            if(allocatorsPresent)
+                Btn_Allocs.IsEnabled = false;
+
+            #endregion
+
+            #region Profile files
+            Profiles[] profileFiles = db.Query<Profiles>("SELECT * FROM Profiles").ToArray();
+
+            bool profileFilesPresent = true;
+
+            foreach(Profiles item in profileFiles)
+            {
+                if (item.Downloaded <= 0)
+                    profileFilesPresent = false;
+            }
+
+            if (profileFilesPresent)
+                Btn_Profile.IsEnabled = false;
+
+            #endregion
+
+            //Disposes both db and web client objects
+            db.Dispose();
+            webClient.Dispose();
         }
 
         //Modular function to light up the "presence led" of a pack

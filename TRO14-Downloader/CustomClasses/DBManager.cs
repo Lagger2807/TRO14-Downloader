@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using SQLite;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace TRO14_Downloader.CustomClasses
 {
@@ -45,81 +46,160 @@ namespace TRO14_Downloader.CustomClasses
 
         private void InizializeTables(SQLiteConnection db, string url)
         {
+            #region DownloadLinks table update
             //Create the web client for the web reading
             WebClient webClient = new WebClient();
             string downloadedString = webClient.DownloadString(url);
-            webClient.Dispose(); //Dispose webClient object leaving its resources to the GC
             
-            //Deserialize the readed json inside a List and then convert it to an Array for optimization purposes
-            DownloadLinks[] downloadLink = JsonConvert.DeserializeObject<List<DownloadLinks>>(downloadedString).ToArray();
+            //Create 2 Lists of DownloadLinks objects from the downloaded Json and from the database query
+            List<DownloadLinks> downloadLinks = JsonConvert.DeserializeObject<List<DownloadLinks>>(downloadedString);
+            List<DownloadLinks> queriedLinks = db.Query<DownloadLinks>("SELECT * FROM DownloadLinks");
 
-            //Execute for every element found in the json: check if an element is already existing inside the DB and decide if add or update it
-            for(int i = 0; i < downloadLink.Length; i++)
-            {
-                DownloadLinks[] recordQuery = db.Query<DownloadLinks>("SELECT * FROM DownloadLinks WHERE Type = '" + downloadLink[i].Type + "' AND Name = '" + downloadLink[i].Name + "'").ToArray();
+            //Use Except and Intersect methods to divide which records i need to add and which i need to update -> reference: https://dev.to/kenakamu/c-compare-two-list-items-gec
+            var toInsert = downloadLinks.Except(queriedLinks);
+            var toUpdate = downloadLinks.Intersect(queriedLinks);
+            var toDelete = queriedLinks.Except(downloadLinks); //Added check for old deprecated links
 
-                if (recordQuery.Length <= 0)
-                    db.Insert(downloadLink[i]);
-                else
-                    db.Query<DownloadLinks>("UPDATE DownloadLinks SET VURL = '" + downloadLink[i].VURL + "', URL = '" + downloadLink[i].URL + "' WHERE Type = '" + downloadLink[i].Type + "' AND Name = '" + downloadLink[i].Name + "'");
-            }
+            foreach (var link in toInsert)
+                db.Insert(link);
 
-            //Stores all DownloadLinks table elements into an array
-            DownloadLinks[] recordsInTable = db.Query<DownloadLinks>("SELECT * FROM DownloadLinks").ToArray();
+            foreach (var link in toUpdate)
+                db.Update(link);
 
-            //Counts the elements and check which type are them
-            for(int i = 0; i < recordsInTable.Length; i++)
-            {
-                switch(recordsInTable[i].Type)
+            //Old links are deleted from the DB
+            foreach (var link in toDelete)
+                db.Delete(link);
+            #endregion
+
+            //Update queriedLinks with the updated table
+            queriedLinks = db.Query<DownloadLinks>("SELECT * FROM DownloadLinks");
+
+            //Filters out in different Lists the various Types of links -> reference: https://learn.microsoft.com/it-it/dotnet/api/system.collections.generic.list-1.findall?view=net-7.0
+            var queriedModPacksLinks = queriedLinks.FindAll(
+                delegate(DownloadLinks DL)
                 {
-                    //Every case add or update elements to the DB based on if it already exist or not
-                    case "ModPacks":
-                        ModPacks modpack = new ModPacks { Name = recordsInTable[i].Name, VersionURL = recordsInTable[i].VURL, DownloadURL = recordsInTable[i].URL };
-                        ModPacks[] modpackQuery = db.Query<ModPacks>("SELECT * FROM ModPacks WHERE Name = '" + modpack.Name + "'").ToArray();
-
-                        if (modpackQuery.Length <= 0)
-                            db.Insert(modpack);
-                        else
-                            db.Query<ModPacks>("UPDATE ModPacks SET VersionURL = '" + modpack.VersionURL + "', DownloadURL = '" + modpack.DownloadURL + "' WHERE Name = '" + modpack.Name + "'");
-                        break;
-
-                    case "VulkanFiles":
-                        VulkanFiles vulkanFile = new VulkanFiles { Name = recordsInTable[i].Name, DownloadURL = recordsInTable[i].URL };
-                        VulkanFiles[] vulkanFilesQuery = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles WHERE Name = '" + vulkanFile.Name + "'").ToArray();
-
-                        if (vulkanFilesQuery.Length <= 0)
-                            db.Insert(vulkanFile);
-                        else
-                            db.Query<VulkanFiles>("UPDATE VulkanFiles SET DownloadURL = '" + vulkanFile.DownloadURL + "' WHERE Name = '" + vulkanFile.Name + "'");
-                        break;
-
-                    case "AllocDLLs":
-                        AllocDLLs allocator = new AllocDLLs { Name = recordsInTable[i].Name, DownloadURL = recordsInTable[i].URL };
-                        AllocDLLs[] allocatorQuery = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs WHERE Name = '" + allocator.Name + "'").ToArray();
-
-                        if (allocatorQuery.Length <= 0)
-                            db.Insert(allocator);
-                        else
-                            db.Query<AllocDLLs>("UPDATE AllocDLLs SET DownloadURL = '" + allocator.DownloadURL + "' WHERE Name = '" + allocator.Name + "'");
-                        break;
-
-                    case "Profiles":
-                        Profiles profile = new Profiles { Name = recordsInTable[i].Name, DownloadURL = recordsInTable[i].URL };
-                        Profiles[] profileQuery = db.Query<Profiles>("SELECT * FROM Profiles WHERE Name = '" + profile.Name + "'").ToArray();
-
-                        if (profileQuery.Length <= 0)
-                            db.Insert(profile);
-                        else
-                            db.Query<Profiles>("UPDATE Profiles SET DownloadURL = '" + profile.DownloadURL + "' WHERE Name = '" + profile.Name + "'");
-                        break;
-
-                    default:
-                        break;
+                    return DL.Type == "ModPacks";
                 }
+                );
+
+            var queriedVulkanFilesLinks = queriedLinks.FindAll(
+                delegate(DownloadLinks DL)
+                {
+                    return DL.Type == "VulkanFiles";
+                }
+                );
+            
+            var queriedAllocatorsLinks = queriedLinks.FindAll(
+                delegate(DownloadLinks DL)
+                {
+                    return DL.Type == "AllocDLLs";
+                }
+                );
+
+            var queriedProfilesLinks = queriedLinks.FindAll(
+                delegate (DownloadLinks DL)
+                {
+                    return DL.Type == "Profiles";
+                }
+                );
+
+            //Generate Lists objects from tables
+            List<ModPacks> queriedModPacks = db.Query<ModPacks>("SELECT * FROM ModPacks");
+            List<VulkanFiles> queriedVulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles");
+            List<AllocDLLs> queriedAllocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs");
+            List<Profiles> queriedProfiles = db.Query<Profiles>("SELECT * FROM Profiles");
+
+            //All partial comments in the ModPack region
+            #region ModPack Initialization
+            ModPacks ModPack = new ModPacks(); //Pre-generate ModPack object
+
+            foreach (DownloadLinks modPackLink in queriedModPacksLinks)
+            {
+                //Assing new attributes to the object each cycle
+                ModPack.Name = modPackLink.Name;
+                ModPack.VersionURL = modPackLink.VURL;
+                ModPack.DownloadURL = modPackLink.URL;
+
+                //Check if already exists inside the DB
+                bool modPackExists = queriedModPacks.Exists(
+                    delegate(ModPacks MP)
+                    { 
+                        return MP.Name == ModPack.Name;
+                    }
+                    );
+
+                if(modPackExists)
+                    db.Update(ModPack);
+                else
+                    db.Insert(ModPack);
             }
+            #endregion
 
+            #region Vulkan Initialization
+            VulkanFiles VulkanFile = new VulkanFiles();
 
-            db.Dispose();
+            foreach (DownloadLinks vulkanLink in queriedVulkanFilesLinks)
+            {
+                VulkanFile.Name = vulkanLink.Name;
+                VulkanFile.DownloadURL = vulkanLink.URL;
+
+                bool vulkanFileExists = queriedVulkanFiles.Exists(
+                    delegate(VulkanFiles VF)
+                    {
+                        return VF.Name == VulkanFile.Name;
+                    }
+                    );
+
+                if(vulkanFileExists)
+                    db.Update(VulkanFile);
+                else
+                    db.Insert(VulkanFile);
+            }
+            #endregion
+
+            #region Allocators Initialization
+            AllocDLLs Allocator = new AllocDLLs();
+
+            foreach (DownloadLinks allocatorLink in queriedAllocatorsLinks)
+            {
+                Allocator.Name = allocatorLink.Name;
+                Allocator.DownloadURL = allocatorLink.URL;
+
+                bool allocatorExists = queriedAllocators.Exists(
+                    delegate(AllocDLLs DLL)
+                    {
+                        return DLL.Name == Allocator.Name;
+                    }
+                    );
+
+                if(allocatorExists)
+                    db.Update(Allocator);
+                else
+                    db.Insert(Allocator);
+            }
+            #endregion
+
+            #region Profile Initialization
+            Profiles Profile = new Profiles();
+
+            foreach (DownloadLinks profileLink in queriedProfilesLinks)
+            {
+                Profile.Name = profileLink.Name;
+                Profile.DownloadURL = profileLink.URL;
+
+                bool profileExists = queriedProfiles.Exists(
+                    delegate(Profiles P)
+                    {
+                        return P.Name == Profile.Name;
+                    }
+                    );
+
+                if (profileExists)
+                    db.Update(Profile);
+                else
+                    db.Insert(Profile);
+            }
+            #endregion
         }
     }
 
