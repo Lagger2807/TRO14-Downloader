@@ -22,6 +22,8 @@ namespace TRO14_Downloader
     {
         //Global installation folders
         public string installationFolder = AppDomain.CurrentDomain.BaseDirectory;
+        public string armaDirectory;
+        public string downloadFolder;
         public string dbURI;
 
         //Global variables
@@ -29,8 +31,9 @@ namespace TRO14_Downloader
 
         //Cached objects
         DBManager dbManager = new DBManager();
-        Instructions instructions;
-        Profile_Instructions profileInstructions;
+        WebClient WC = new WebClient();
+        Instructions Instructions;
+        Profile_Instructions ProfileInstructions;
 
         //Global constants
         public const string jsonReadURL = "https://raw.githubusercontent.com/Lagger2807/TRO14-Files/main/DB%20Inizializer.json";
@@ -71,11 +74,8 @@ namespace TRO14_Downloader
 
                 //Starts SQL and Web Client connections
                 var db = new SQLiteConnection(dbURI);
-                WebClient webClient = new WebClient();
 
-                //Create the paths object with the download folder location
-                Paths[] downloadFolderQuery = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'DownloadFolder'").ToArray();
-                string downloadFolderPath = downloadFolderQuery[0].PathURI;
+                List<ModPacks> modPacks = db.Query<ModPacks>("SELECT * FROM ModPacks");
 
                 //For every checkbox execute all the instructions
                 for (int i = 0; i < modPacksCheckBoxesState.Length; i++)
@@ -90,12 +90,16 @@ namespace TRO14_Downloader
                         switch (i)
                         {
                             case 0:
-                                //Select for the right modpack (hardcoded for now) and starts a threaded downloader instance with download information
-                                ModPacks[] modPacks_Demo = db.Query<ModPacks>("SELECT * FROM ModPacks WHERE Name = 'Demo'").ToArray();
-                                await Task.Run(() => Downloader(modPacks_Demo[0].DownloadURL, downloadFolderPath + @"\Demo.html"));
+                                ModPacks modPackDemo = modPacks.Find(
+                                    delegate (ModPacks MP)
+                                    {
+                                        return MP.Name == "Demo";
+                                    }
+                                    );
+                                await Task.Run(() => Downloader(modPackDemo.DownloadURL, downloadFolder + @"\Demo.html"));
 
                                 //Reads the GitHub json and deserialize it in a single modpack object then updates the db
-                                string demoJson = webClient.DownloadString(modPacks_Demo[0].VersionURL);
+                                string demoJson = WC.DownloadString(modPackDemo.VersionURL);
                                 ModPack demoModPack = JsonConvert.DeserializeObject<ModPack>(demoJson);
                                 db.Query<ModPacks>("UPDATE ModPacks SET Version = '" + demoModPack.Version + "', Downloaded = 1 WHERE Name = 'Demo'");
 
@@ -105,10 +109,15 @@ namespace TRO14_Downloader
                                 break;
 
                             case 1:
-                                ModPacks[] modPacks_Lite = db.Query<ModPacks>("SELECT * FROM ModPacks WHERE Name = 'Lite'").ToArray();
-                                await Task.Run(() => Downloader(modPacks_Lite[0].DownloadURL, downloadFolderPath + @"\Lite.html"));
+                                ModPacks modPackLite = modPacks.Find(
+                                    delegate (ModPacks MP)
+                                    {
+                                        return MP.Name == "Lite";
+                                    }
+                                    );
+                                await Task.Run(() => Downloader(modPackLite.DownloadURL, downloadFolder + @"\Lite.html"));
 
-                                string liteJson = webClient.DownloadString(modPacks_Lite[0].VersionURL);
+                                string liteJson = WC.DownloadString(modPackLite.VersionURL);
                                 ModPack liteModPack = JsonConvert.DeserializeObject<ModPack>(liteJson);
                                 db.Query<ModPacks>("UPDATE ModPacks SET Version = '" + liteModPack.Version + "', Downloaded = 1 WHERE Name = 'Lite'");
 
@@ -117,10 +126,15 @@ namespace TRO14_Downloader
                                 break;
 
                             case 2:
-                                ModPacks[] modPacks_Standard = db.Query<ModPacks>("SELECT * FROM ModPacks WHERE Name = 'Standard'").ToArray();
-                                await Task.Run(() => Downloader(modPacks_Standard[0].DownloadURL, downloadFolderPath + @"\Standard.html"));
+                                ModPacks modPackStandard = modPacks.Find(
+                                    delegate (ModPacks MP)
+                                    {
+                                        return MP.Name == "Standard";
+                                    }
+                                    );
+                                await Task.Run(() => Downloader(modPackStandard.DownloadURL, downloadFolder + @"\Standard.html"));
 
-                                string standardJson = webClient.DownloadString(modPacks_Standard[0].VersionURL);
+                                string standardJson = WC.DownloadString(modPackStandard.VersionURL);
                                 ModPack standardModPack = JsonConvert.DeserializeObject<ModPack>(standardJson);
                                 db.Query<ModPacks>("UPDATE ModPacks SET Version = '" + standardModPack.Version + "', Downloaded = 1 WHERE Name = 'Standard'");
 
@@ -129,10 +143,15 @@ namespace TRO14_Downloader
                                 break;
 
                             case 3:
-                                ModPacks[] modPacks_OldTimes = db.Query<ModPacks>("SELECT * FROM ModPacks WHERE Name = 'Old Times'").ToArray();
-                                await Task.Run(() => Downloader(modPacks_OldTimes[0].DownloadURL, downloadFolderPath + @"\OldTimes.html"));
+                                ModPacks modPackOldTimes = modPacks.Find(
+                                    delegate (ModPacks MP)
+                                    {
+                                        return MP.Name == "Old Times";
+                                    }
+                                    );
+                                await Task.Run(() => Downloader(modPackOldTimes.DownloadURL, downloadFolder + @"\OldTimes.html"));
 
-                                string oldTimeJson = webClient.DownloadString(modPacks_OldTimes[0].VersionURL);
+                                string oldTimeJson = WC.DownloadString(modPackOldTimes.VersionURL);
                                 ModPack oldTimeModPack = JsonConvert.DeserializeObject<ModPack>(oldTimeJson);
                                 db.Query<ModPacks>("UPDATE ModPacks SET Version = '" + oldTimeModPack.Version + "', Downloaded = 1 WHERE Name = 'Old Times'");
 
@@ -141,10 +160,15 @@ namespace TRO14_Downloader
                                 break;
 
                             case 4:
-                                ModPacks[] modPacks_Future = db.Query<ModPacks>("SELECT * FROM ModPacks WHERE Name = 'Future'").ToArray();
-                                await Task.Run(() => Downloader(modPacks_Future[0].DownloadURL, downloadFolderPath + @"\Future.html"));
+                                ModPacks modPackFuture = modPacks.Find(
+                                    delegate (ModPacks MP)
+                                    {
+                                        return MP.Name == "Future";
+                                    }
+                                    );
+                                await Task.Run(() => Downloader(modPackFuture.DownloadURL, downloadFolder + @"\Future.html"));
 
-                                string futureJson = webClient.DownloadString(modPacks_Future[0].VersionURL);
+                                string futureJson = WC.DownloadString(modPackFuture.VersionURL);
                                 ModPack futureModPack = JsonConvert.DeserializeObject<ModPack>(futureJson);
                                 db.Query<ModPacks>("UPDATE ModPacks SET Version = '" + futureModPack.Version + "', Downloaded = 1 WHERE Name = 'Future'");
 
@@ -162,15 +186,14 @@ namespace TRO14_Downloader
                 if(isSomethingSelected)
                 {
                     //Open the download folder and instructions
-                    Process.Start(downloadFolderPath);
+                    Process.Start(downloadFolder);
 
-                    instructions = new Instructions();
-                    instructions.Show();
+                    Instructions = new Instructions();
+                    Instructions.Show();
                 }
                 
                 //Dispose all the complex objects
-                db.Dispose();
-                webClient.Dispose();
+                db.Close();
             }
             catch (Exception error)
             {
@@ -181,8 +204,8 @@ namespace TRO14_Downloader
 
         private void Btn_Tutorial_Click(object sender, RoutedEventArgs e)
         {
-            instructions = new Instructions();
-            instructions.Show();
+            Instructions = new Instructions();
+            Instructions.Show();
         }
 
         private void Btn_Visualizza_Click(object sender, RoutedEventArgs e)
@@ -192,13 +215,18 @@ namespace TRO14_Downloader
                 var db = new SQLiteConnection(dbURI);
                 ModPacks[] modPacks = db.Query<ModPacks>("SELECT * FROM ModPacks").ToArray();
 
-                MessageBox.Show("Demo: " + modPacks[0].Version + ".\n" +
-                    "Lite: " + modPacks[1].Version + ".\n" +
-                    "Standard: " + modPacks[2].Version + ".\n" +
-                    "Old Times: " + modPacks[3].Version + ".\n" +
-                    "Future: " + modPacks[4].Version + ".", "Installed versions");
+                List<ModPacks> queriedModPacks = db.Query<ModPacks>("SELECT * FROM ModPacks");
 
-                db.Dispose();
+                string modPacksVersionList = "";
+
+                foreach(ModPacks modPack in queriedModPacks)
+                {
+                    modPacksVersionList += modPack.Name + ": " + modPack.Version + ". \n";
+                }
+
+                MessageBox.Show(modPacksVersionList, "Installed versions");
+
+                db.Close();
             }
             catch (Exception error)
             {
@@ -213,21 +241,16 @@ namespace TRO14_Downloader
                 //Starts SQL connections
                 var db = new SQLiteConnection(dbURI);
 
-                //Create the paths object with the download folder location
-                Paths[] armaPath = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
-                string armaDirectory = armaPath[0].PathURI;
-
-                //Create the vulkan files query
-                VulkanFiles[] vulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles").ToArray();
+                List<VulkanFiles> queriedVulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles");
                 
                 //for each item in the query downloads in the arma folder and sets it to downloaded
-                foreach(VulkanFiles item in vulkanFiles)
+                foreach(VulkanFiles vulkanFile in queriedVulkanFiles)
                 {
-                    Downloader(item.DownloadURL, armaDirectory + @"\" + item.Name);
+                    Downloader(vulkanFile.DownloadURL, armaDirectory + @"\" + vulkanFile.Name);
 
                     //Checks if the files exists in the arma folder, if true sets it to downloaded
-                    if (File.Exists(armaDirectory + @"\" + item.Name))
-                        db.Query<VulkanFiles>("UPDATE VulkanFiles SET Downloaded = " + 1 + " WHERE Name = '" + item.Name + "'");
+                    if (File.Exists(armaDirectory + @"\" + vulkanFile.Name))
+                        db.Query<VulkanFiles>("UPDATE VulkanFiles SET Downloaded = " + 1 + " WHERE Name = '" + vulkanFile.Name + "'");
                 }
 
                 //Updates the UI
@@ -242,7 +265,7 @@ namespace TRO14_Downloader
                 Led_Vulkan.Fill = Brushes.ForestGreen;
 
                 //Disposes the db connection
-                db.Dispose();
+                db.Close();
             }
             catch (Exception error)
             {
@@ -253,11 +276,7 @@ namespace TRO14_Downloader
 
         private void Btn_Start_Click(object sender, RoutedEventArgs e)
         {
-            var db = new SQLiteConnection(dbURI);
-            Paths[] path = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
-            db.Dispose();
-
-            Process.Start(path[0].PathURI + @"\arma3launcher.exe");
+            Process.Start(armaDirectory + @"\arma3launcher.exe");
             this.Close();
         }
 
@@ -274,28 +293,26 @@ namespace TRO14_Downloader
                 //Starts SQL connections
                 var db = new SQLiteConnection(dbURI);
 
-                //Create the paths object with the download folder location
-                Paths[] armaPath = db.Query<Paths>("SELECT * FROM Paths").ToArray();
-                string armaDirectory = armaPath[0].PathURI;
-
                 //Create the allocators query
                 AllocDLLs[] allocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs").ToArray();
 
+                List<AllocDLLs> queriedAllocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs");
+
                 //for each item in the query downloads in the arma folder and sets it to downloaded
-                foreach (AllocDLLs item in allocators)
+                foreach (AllocDLLs allocator in queriedAllocators)
                 {
-                    Downloader(item.DownloadURL, armaDirectory + @"\Dll\" + item.Name);
+                    Downloader(allocator.DownloadURL, armaDirectory + @"\Dll\" + allocator.Name);
 
                     //Checks if the files exists in the arma folder, if true sets it to downloaded
-                    if (File.Exists(armaDirectory + @"\Dll\" + item.Name))
-                        db.Query<VulkanFiles>("UPDATE AllocDLLs SET Downloaded = " + 1 + " WHERE Name = '" + item.Name + "'");
+                    if (File.Exists(armaDirectory + @"\Dll\" + allocator.Name))
+                        db.Query<VulkanFiles>("UPDATE AllocDLLs SET Downloaded = " + 1 + " WHERE Name = '" + allocator.Name + "'");
                 }
 
                 //Updates the UI
                 Btn_Allocs.IsEnabled = false;
 
                 //Disposes the db connection
-                db.Dispose();
+                db.Close();
             }
             catch(Exception error)
             {
@@ -311,35 +328,30 @@ namespace TRO14_Downloader
                 //Starts SQL connections
                 var db = new SQLiteConnection(dbURI);
 
-                //Create the paths object with the download folder location
-                Paths[] armaPath = db.Query<Paths>("SELECT * FROM Paths").ToArray();
-                string armaDirectory = armaPath[0].PathURI;
-
-                //Create profile files query
-                Profiles[] profileFiles = db.Query<Profiles>("SELECT * FROM Profiles").ToArray();
+                List<Profiles> queriedProfiles = db.Query<Profiles>("SELECT * FROM Profiles");
 
                 //Create the profile folder if not exists
                 if(!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Arma 3 - Other Profiles\DefaultProfile\"))
                     Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Arma 3 - Other Profiles\DefaultProfile\");
 
                 //for each item in the query downloads in the "documents/Arma 3 - other profiles" and sets it to downloaded
-                foreach (Profiles item in profileFiles)
+                foreach (Profiles profile in queriedProfiles)
                 {
-                    Downloader(item.DownloadURL, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Arma 3 - Other Profiles\DefaultProfile\" + item.Name);
+                    Downloader(profile.DownloadURL, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Arma 3 - Other Profiles\DefaultProfile\" + profile.Name);
 
                     //Checks if the files exists in the arma folder, if true sets it to downloaded
-                    if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Arma 3 - Other Profiles\DefaultProfile\" + item.Name))
-                        db.Query<Profiles>("UPDATE Profiles SET Downloaded = " + 1 + " WHERE Name = '" + item.Name + "'");
+                    if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Arma 3 - Other Profiles\DefaultProfile\" + profile.Name))
+                        db.Query<Profiles>("UPDATE Profiles SET Downloaded = " + 1 + " WHERE Name = '" + profile.Name + "'");
                 }
 
                 //Updates the UI
                 Btn_Profile.IsEnabled = false;
 
                 //Disposes the db connection
-                db.Dispose();
+                db.Close();
 
-                profileInstructions = new Profile_Instructions();
-                profileInstructions.Show();
+                ProfileInstructions = new Profile_Instructions();
+                ProfileInstructions.Show();
             }
             catch(Exception error)
             {
@@ -369,12 +381,12 @@ namespace TRO14_Downloader
                 newPath.PathURI = folderDlg.SelectedPath;
 
                 //Update the db element with the updated one
-                db.Query<Paths>("UPDATE Paths SET PathURI = '" + newPath.PathURI + "' Name = '" + newPath.Name + "'");
+                db.Update(newPath);
             }
 
             //Dispose the folder dialog and db object
             folderDlg.Dispose();
-            db.Dispose();
+            db.Close();
         }
 
         #region CheckBoxes Click events
@@ -461,9 +473,7 @@ namespace TRO14_Downloader
         {
             try
             {
-                WebClient wc = new WebClient();
-                wc.DownloadFile(dwLink, uri);
-                wc.Dispose();
+                WC.DownloadFile(dwLink, uri);
             }
             catch(Exception ex)
             {
@@ -472,27 +482,25 @@ namespace TRO14_Downloader
         }
 
         #region Starting functions
-        //Function that extract a random background from the "Backgrounds" folder
+        //Function that extracts a random background from the "Backgrounds" folder
         void RandomStartupBackground()
         {
             string[] backgroundImages = Directory.GetFiles(installationFolder + @"\Backgrounds", "*.jpg");
 
-            if(backgroundImages.Length <= 0) { return; }
+            if(backgroundImages.Length < 1) { return; }
 
-            Random random = new Random();
-            int backgroundIndex = random.Next(0, backgroundImages.Length);
+            Random Random = new Random();
+            int backgroundIndex = Random.Next(0, backgroundImages.Length);
 
-            ImageSource background = new BitmapImage(new Uri(backgroundImages[backgroundIndex]));
-            BackGroundXAMLImage.ImageSource = background;
+            ImageSource Background = new BitmapImage(new Uri(backgroundImages[backgroundIndex]));
+            BackGroundXAMLImage.ImageSource = Background;
         }
 
         //Function with all first start procedures (check presence and create basic files/roots)
         void FirstStartControl()
         {   
             if (!Directory.Exists(installationFolder + @"\Download"))
-            {
                 Directory.CreateDirectory(installationFolder + @"\Download");
-            }
 
             dbManager.InizializeDB(jsonReadURL);
 
@@ -512,28 +520,23 @@ namespace TRO14_Downloader
                 }
                 );
 
-            if(!armaDirExists)
+            if (!armaDirExists)
             {
                 Paths newPath = new Paths { Name = "ArmaDirectory" };
 
                 //Open folder selection dialog to user
                 System.Windows.Forms.FolderBrowserDialog folderDlg = new System.Windows.Forms.FolderBrowserDialog();
                 folderDlg.ShowNewFolderButton = true; //Enables new folders creation
-                folderDlg.Description = "Select the folder where Arma3.exe is contained"; //Sets a description for the folder dialog window
+                folderDlg.Description = "Select the folder where Arma3.exe is contained, usually inside your default Steam games directory."; //Sets a description for the folder dialog window
 
                 //Show dialog to user
                 System.Windows.Forms.DialogResult result = folderDlg.ShowDialog();
 
                 //Check if a folder as been selected and assign it to a variable, else it chooses the default (desktop) folder
                 if (result == System.Windows.Forms.DialogResult.OK)
-                {
                     newPath.PathURI = folderDlg.SelectedPath;
-                }
                 else
-                {
-                    //Set the ArmA3 folder as the desktop folder
-                    newPath.PathURI = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                }
+                    newPath.PathURI = Environment.GetFolderPath(Environment.SpecialFolder.Desktop); //Set the ArmA3 folder as the desktop folder
 
                 db.Insert(newPath);
             }
@@ -544,6 +547,21 @@ namespace TRO14_Downloader
                 db.Insert(downloadPath);
             }
 
+            //Assign the directories to global variables
+            armaDirectory = paths.Find(
+                    delegate (Paths P)
+                    {
+                        return P.Name == "ArmaDirectory";
+                    }
+                    ).PathURI;
+
+            downloadFolder = paths.Find(
+                delegate (Paths P)
+                {
+                    return P.Name == "DownloadFolder";
+                }
+                ).PathURI;
+
             db.Close();
         }
 
@@ -553,191 +571,166 @@ namespace TRO14_Downloader
             //Create the database connection
             var db = new SQLiteConnection(dbURI);
 
-            //Read the ArmA3 directory
-            Paths[] paths = db.Query<Paths>("SELECT * FROM Paths WHERE Name = 'ArmaDirectory'").ToArray();
-            string arma3Folder = paths[0].PathURI;
-
-            if (!File.Exists(arma3Folder + @"\arma3launcher.exe"))
+            if (!File.Exists(armaDirectory + @"\arma3launcher.exe"))
                 Btn_Start.IsEnabled = false;
-
+            
             #region ModPacks
+            //Put ModPacks informations in to a List
+            List<ModPacks> queriedModPacks = db.Query<ModPacks>("SELECT * FROM ModPacks");
 
-            //Create a query object with all modpacks informations
-            ModPacks[] modPacks = db.Query<ModPacks>("SELECT * FROM ModPacks").ToArray();
-
-            //Starts the web client
-            WebClient webClient = new WebClient();
-
-            //Iterate all modpacks and checks their versions
-            for (int i = 0; i < modPacks.Length; i++)
+            //Cycle each ModPack
+            foreach (ModPacks modPack in queriedModPacks)
             {
-                //Reads the version from the link saved inside the DB and deserialize it
-                string versionJson = webClient.DownloadString(modPacks[i].VersionURL);
-                ModPack singleModPack = JsonConvert.DeserializeObject<ModPack>(versionJson);
-
-                //For every single modpack checks if it's installed and sets the UI
-                if (modPacks[i].Downloaded > 0)
+                //Check if the ModPack was ever downloaded
+                if(modPack.Downloaded > 0)
                 {
-                    InstalledPacksCheck(i);
+                    //Update installation status in the interface based on ModPack name
+                    UpdateModpackInstallStatus(modPack.Name);
 
-                    //try parsing the text value because sqlite doesn't support floats...
-                    float.TryParse(modPacks[i].Version.ToString(), out float floatVersion);
+                    //Download and deserialize in to an object the Json stream
+                    string versionJson = WC.DownloadString(modPack.VersionURL);
+                    ModPack singleModPack = JsonConvert.DeserializeObject<ModPack>(versionJson);
 
-                    //Then checks if the modpack is up to date and show the alert
-                    if (floatVersion < singleModPack.Version)
+                    //Parse the float version of the ModPack based on DB value
+                    float.TryParse(modPack.Version.ToString(), out float floatVersion);
+
+                    //Check if the uploaded ModPack is newer than the local one
+                    if(floatVersion < singleModPack.Version)
                     {
-                        switch (modPacks[i].Name)
-                        {
-                            case "Demo":
-                                Led_Demo.Fill = Brushes.Red;
-                                break;
-
-                            case "Lite":
-                                Led_Lite.Fill = Brushes.Red;
-                                break;
-
-                            case "Standard":
-                                Led_Standard.Fill = Brushes.Red;
-                                break;
-
-                            case "Old Times":
-                                Led_OldTimes.Fill = Brushes.Red;
-                                break;
-
-                            case "Future":
-                                Led_Future.Fill = Brushes.Red;
-                                break;
-
-                            default:
-                                break;
-                        }
-
-                        MessageBox.Show(modPacks[i].Name + " update found!");
+                        //Update the update status interface based on ModPack name and displays the update notice popup
+                        UpdateModpackUpdateStatus(modPack.Name);
+                        MessageBox.Show(modPack.Name + " update found!");
                     }
                 }
             }
-
             #endregion
 
             #region VulkanFiles
+            //Put VulkanFiles informations in to a List
+            List<VulkanFiles> queriedVulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles");
 
-            VulkanFiles[] vulkanFiles = db.Query<VulkanFiles>("SELECT * FROM VulkanFiles").ToArray();
-
+            //Use a variable to create a default state and change it only based on a DB check
             bool vulkanDownloaded = true;
-
-            //Check if the VulkanAPI files are downloaded
-            foreach (VulkanFiles item in vulkanFiles)
+            foreach (VulkanFiles vulkanFile in queriedVulkanFiles)
             {
-                if (item.Downloaded <= 0)
-                {
+                if (vulkanFile.Downloaded < 1)
                     vulkanDownloaded = false;
-                }
             }
+            //---------------------------------------------------------
 
-            //Check if the VulkanAPIs are installed
             if (vulkanDownloaded)
             {
-                //Show the VulkanAPI checkbox, text and led while disabling the download button
+                //Update interface showing the Vulkan panel
                 CK_Vulkan.Visibility = Visibility.Visible;
                 Text_Vulkan.Visibility = Visibility.Visible;
                 Text_VulkanIsPresent.Visibility = Visibility.Visible;
                 Led_Vulkan.Visibility = Visibility.Visible;
 
-                bool vulkanInstalled = true;
-
                 //Mass check if the VulkanAPI files are correctly present in one of their states, if not, disables everything and make you re-download them
-                if (File.Exists(arma3Folder + @"\d3d11.dll") && File.Exists(arma3Folder + @"\dxgi.dll"))
+                if (File.Exists(armaDirectory + @"\d3d11.dll") && File.Exists(armaDirectory + @"\dxgi.dll"))
                 {
                     CK_Vulkan.IsChecked = true;
                     db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 1");
+                    Btn_Vulkan.IsEnabled = false;
                 }
-                else if (File.Exists(arma3Folder + @"\d3d11.dllOFF") && File.Exists(arma3Folder + @"\dxgi.dllOFF"))
+                else if (File.Exists(armaDirectory + @"\d3d11.dllOFF") && File.Exists(armaDirectory + @"\dxgi.dllOFF"))
                 {
                     CK_Vulkan.IsChecked = false;
                     db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 0");
+                    Btn_Vulkan.IsEnabled = false;
                 }
                 else
                 {
                     CK_Vulkan.IsEnabled = false;
                     db.Query<VulkanFiles>("UPDATE VulkanFiles SET Active = 0");
 
-                    vulkanInstalled = false;
-
-                    MessageBox.Show("Vulkan API damaged, UI enabler disabled");
-                }
-
-                if(vulkanInstalled)
-                {
-                    Btn_Vulkan.IsEnabled = false;
-                }
-                else if(!vulkanInstalled)
-                {
                     CK_Vulkan.IsEnabled = false;
                     Text_VulkanIsPresent.Content = "Vulkan API damaged!";
                     Text_VulkanIsPresent.FontWeight = FontWeights.Bold;
                     Led_Vulkan.Fill = Brushes.Red;
+
+                    MessageBox.Show("Vulkan API damaged, UI enabler disabled");
                 }
             }
-
             #endregion
 
             #region DLLs
-
-            AllocDLLs[] allocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs").ToArray();
+            List<AllocDLLs> queriedAllocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs");
 
             bool allocatorsPresent = true;
 
-            foreach(AllocDLLs item in allocators)
+            foreach (AllocDLLs allocator in queriedAllocators)
             {
-                if(item.Downloaded <= 0)
-                    allocatorsPresent = false;
+                if (allocator.Downloaded < 1)
+                    allocatorsPresent = true;
             }
 
             if(allocatorsPresent)
                 Btn_Allocs.IsEnabled = false;
-
             #endregion
 
             #region Profile files
-            Profiles[] profileFiles = db.Query<Profiles>("SELECT * FROM Profiles").ToArray();
+            List<Profiles> queriedProfiles = db.Query<Profiles>("SELECT * FROM Profiles");
 
             bool profileFilesPresent = true;
 
-            foreach(Profiles item in profileFiles)
+            foreach(Profiles profile in queriedProfiles)
             {
-                if (item.Downloaded <= 0)
+                if (profile.Downloaded < 1)
                     profileFilesPresent = false;
             }
 
             if (profileFilesPresent)
                 Btn_Profile.IsEnabled = false;
-
             #endregion
 
-            //Disposes both db and web client objects
-            db.Dispose();
-            webClient.Dispose();
+            //Close DB connection
+            db.Close();
         }
 
         //Modular function to light up the "presence led" of a pack
-        void InstalledPacksCheck(int ledId)
+        void UpdateModpackInstallStatus(string modPackName)
         {
-            switch (ledId)
+            switch (modPackName)
             {
-                case 0:
+                case "Demo":
                     Led_Demo.Visibility = Visibility.Visible;
                     break;
-                case 1:
+                case "Lite":
                     Led_Lite.Visibility = Visibility.Visible;
                     break;
-                case 2:
+                case "Standard":
                     Led_Standard.Visibility = Visibility.Visible;
                     break;
-                case 3:
+                case "Old Times":
                     Led_OldTimes.Visibility = Visibility.Visible;
                     break;
-                case 4:
+                case "Future":
                     Led_Future.Visibility = Visibility.Visible;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateModpackUpdateStatus(string modPackName)
+        {
+            switch (modPackName)
+            {
+                case "Demo":
+                    Led_Demo.Fill = Brushes.Red;
+                    break;
+                case "Lite":
+                    Led_Lite.Fill = Brushes.Red;
+                    break;
+                case "Standard":
+                    Led_Standard.Fill = Brushes.Red;
+                    break;
+                case "Old Times":
+                    Led_OldTimes.Fill = Brushes.Red;
+                    break;
+                case "Future":
+                    Led_Future.Fill = Brushes.Red;
                     break;
                 default:
                     break;
