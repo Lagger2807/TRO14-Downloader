@@ -293,9 +293,6 @@ namespace TRO14_Downloader
                 //Starts SQL connections
                 var db = new SQLiteConnection(dbURI);
 
-                //Create the allocators query
-                AllocDLLs[] allocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs").ToArray();
-
                 List<AllocDLLs> queriedAllocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs");
 
                 //for each item in the query downloads in the arma folder and sets it to downloaded
@@ -305,7 +302,7 @@ namespace TRO14_Downloader
 
                     //Checks if the files exists in the arma folder, if true sets it to downloaded
                     if (File.Exists(armaDirectory + @"\Dll\" + allocator.Name))
-                        db.Query<VulkanFiles>("UPDATE AllocDLLs SET Downloaded = " + 1 + " WHERE Name = '" + allocator.Name + "'");
+                        db.Query<AllocDLLs>("UPDATE AllocDLLs SET Downloaded = " + 1 + " WHERE Name = '" + allocator.Name + "'");
                 }
 
                 //Updates the UI
@@ -538,29 +535,35 @@ namespace TRO14_Downloader
                 else
                     newPath.PathURI = Environment.GetFolderPath(Environment.SpecialFolder.Desktop); //Set the ArmA3 folder as the desktop folder
 
+                armaDirectory = newPath.PathURI;
+
                 db.Insert(newPath);
             }
-
-            if(!downloadFolderExists)
+            else
             {
-                Paths downloadPath = new Paths { Name = "DownloadFolder", PathURI = Path.Combine(installationFolder, "Download") };
-                db.Insert(downloadPath);
-            }
-
-            //Assign the directories to global variables
-            armaDirectory = paths.Find(
+                armaDirectory = paths.Find(
                     delegate (Paths P)
                     {
                         return P.Name == "ArmaDirectory";
                     }
                     ).PathURI;
+            }
 
-            downloadFolder = paths.Find(
+            if(!downloadFolderExists)
+            {
+                Paths downloadPath = new Paths { Name = "DownloadFolder", PathURI = Path.Combine(installationFolder, "Download") };
+                downloadFolder = downloadPath.PathURI;
+                db.Insert(downloadPath);
+            }
+            else
+            {
+                downloadFolder = paths.Find(
                 delegate (Paths P)
                 {
                     return P.Name == "DownloadFolder";
                 }
                 ).PathURI;
+            }
 
             db.Close();
         }
@@ -657,11 +660,11 @@ namespace TRO14_Downloader
             #region DLLs
             List<AllocDLLs> queriedAllocators = db.Query<AllocDLLs>("SELECT * FROM AllocDLLs");
 
-            bool allocatorsPresent = true;
+            bool allocatorsPresent = false;
 
             foreach (AllocDLLs allocator in queriedAllocators)
             {
-                if (allocator.Downloaded < 1)
+                if (allocator.Downloaded > 0)
                     allocatorsPresent = true;
             }
 
