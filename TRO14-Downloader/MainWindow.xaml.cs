@@ -282,8 +282,7 @@ namespace TRO14_Downloader
 
         private void Btn_Info_Click(object sender, RoutedEventArgs e)
         {
-            //change generic github link with wiki link
-            Process.Start("www.github.com"); //Process.Start seems to be able to open web pages too... cool...
+            Process.Start("https://github.com/Lagger2807/TRO14-Downloader/wiki/Advanced-options-info"); //Process.Start seems to be able to open web pages too... cool...
         }
 
         private void Btn_DLL_Click(object sender, RoutedEventArgs e)
@@ -359,31 +358,39 @@ namespace TRO14_Downloader
 
         private void Btn_ChangeDir_Click(object sender, RoutedEventArgs e)
         {
-            var db = new SQLiteConnection(dbURI);
-
-            Paths newPath = new Paths { Name = "ArmaDirectory" };
-
-            //Open folder selection dialog to user
-            System.Windows.Forms.FolderBrowserDialog folderDlg = new System.Windows.Forms.FolderBrowserDialog();
-            folderDlg.ShowNewFolderButton = true; //Enables new folders creation
-            folderDlg.Description = "Select the folder where Arma3.exe is contained"; //Sets a description for the folder dialog window
-
-            //Show dialog to user
-            System.Windows.Forms.DialogResult result = folderDlg.ShowDialog();
-
-            //Check if a folder as been selected and assign it to a variable, else it chooses the default (desktop) folder
-            if (result == System.Windows.Forms.DialogResult.OK)
+            try
             {
-                //Assign the new URI to the path object
-                newPath.PathURI = folderDlg.SelectedPath;
+                var db = new SQLiteConnection(dbURI);
 
-                //Update the db element with the updated one
-                db.Update(newPath);
+                Paths newPath = new Paths { Name = "ArmaDirectory" };
+
+                //Open folder selection dialog to user
+                System.Windows.Forms.FolderBrowserDialog folderDlg = new System.Windows.Forms.FolderBrowserDialog();
+                folderDlg.ShowNewFolderButton = true; //Enables new folders creation
+                folderDlg.Description = "Select the folder where Arma3.exe is contained"; //Sets a description for the folder dialog window
+
+                //Show dialog to user
+                System.Windows.Forms.DialogResult result = folderDlg.ShowDialog();
+
+                //Check if a folder as been selected and assign it to a variable, else it chooses the default (desktop) folder
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    //Assign the new URI to the path object
+                    newPath.PathURI = folderDlg.SelectedPath;
+
+                    //Update the db element with the updated one
+                    db.Update(newPath);
+                }
+
+                //Dispose the folder dialog and db object
+                folderDlg.Dispose();
+                db.Close();
             }
-
-            //Dispose the folder dialog and db object
-            folderDlg.Dispose();
-            db.Close();
+            catch (Exception error)
+            {
+                //Send Crash report via CrashReportDotNet API
+                App.SendReport(error, "Directory change failed" + error.Message);
+            }
         }
 
         #region CheckBoxes Click events

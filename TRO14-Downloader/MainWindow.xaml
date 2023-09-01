@@ -131,7 +131,7 @@
                     <Button Name="Btn_ChangeDir" Content="Change Arma 3 Directory" Grid.Column="4" Grid.Row="7" Height="40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Click="Btn_ChangeDir_Click" Cursor="Hand"/>
 
                     <!--Info-->
-                    <Button Name="Btn_Info" Content="?" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Left" Grid.Row="7" VerticalAlignment="Bottom" Height="25" Width="25" ToolTip="Read the documentation about advanced settings (WIP)" Click="Btn_Info_Click" Cursor="Hand" IsCancel="True" FontSize="18"/>
+                    <Button Name="Btn_Info" Content="?" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Left" Grid.Row="7" VerticalAlignment="Bottom" Height="25" Width="25" ToolTip="Read the documentation about advanced settings" Click="Btn_Info_Click" Cursor="Hand" IsCancel="True" FontSize="18"/>
                 </Grid>
             </TabItem>
         </TabControl>
