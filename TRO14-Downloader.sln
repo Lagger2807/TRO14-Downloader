@@ -5,6 +5,8 @@ VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TRO14-Downloader", "TRO14-Downloader\TRO14-Downloader.csproj", "{797FCE1E-3018-4BEC-BF1F-5B939571AD47}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TROP-Downloader", "TROP-Downloader\TROP-Downloader.vdproj", "{3602DF2B-A0BB-418D-A3FD-82416BD4E0FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{797FCE1E-3018-4BEC-BF1F-5B939571AD47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{797FCE1E-3018-4BEC-BF1F-5B939571AD47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{797FCE1E-3018-4BEC-BF1F-5B939571AD47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3602DF2B-A0BB-418D-A3FD-82416BD4E0FE}.Debug|Any CPU.ActiveCfg = Debug
+		{3602DF2B-A0BB-418D-A3FD-82416BD4E0FE}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
